@@ -1,8 +1,9 @@
 {
-  "name": "karlbox",
-  "fullName": "karlbox",
-  "description": "a basic add-on",
-  "author": "",
-  "license": "MPL 1.1/GPL 2.0/LGPL 2.1",
-  "version": "0.1"
+    "name": "karlbox", 
+    "license": "GPL 2.0", 
+    "author": "", 
+    "version": "0.1", 
+    "fullName": "karlbox", 
+    "id": "jid0-iWkVqqz2l7w05hE4fmTv2uzL2hQ", 
+    "description": "a basic add-on"
 }
