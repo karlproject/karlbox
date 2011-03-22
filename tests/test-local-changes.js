@@ -2,6 +2,18 @@
 const localChanges = require('local-changes');
 const file = require("file");
 
+const {Cc,Ci,Cr} = require("chrome");
+
+// like setTimeout
+function timeout(func, delay) {
+    var timer = Cc['@mozilla.org/timer;1']
+        .createInstance(Ci.nsITimer); 
+    timer.initWithCallback(func, delay,
+        Ci.nsITimer.TYPE_ONE_SHOT); 
+    return timer;
+}
+
+
 function TestDir(base_dir) {
 
     this.remove_base_dir = function() {
@@ -13,6 +25,10 @@ function TestDir(base_dir) {
     };
 
     this.create_file = function(name) {
+        this.touch_file(name);
+    };
+
+    this.touch_file = function(name) {
         this._touch(file.join(base_dir, name));
     };
 
@@ -49,6 +65,16 @@ function get_base_dir_path() {
     return '/tmp/karlboxtest';
 }
 
+function len(d) {
+    var result = 0;
+    for (var key in d) {
+        if (d.hasOwnProperty(key)) {
+            result += 1;
+        }
+    }
+    return result
+}
+
 exports.test_empty = function(test) {
     var base_dir_path = get_base_dir_path();
     var test_dir = new TestDir(base_dir_path);
@@ -58,6 +84,8 @@ exports.test_empty = function(test) {
 
     test.assertEqual(result.added.length, 0);
     test.assertEqual(result.deleted.length, 0);
+    test.assertEqual(result.modified.length, 0);
+
 };
 
 exports.simple = function(test) {
@@ -68,29 +96,102 @@ exports.simple = function(test) {
     test_dir.create_file('aaa.txt');
     test_dir.create_file('bbb.txt');
 
-    var filelist = [];
+    var files = {};
 
     // Calling detect will add the two new files
-    var result = localChanges.detect(base_dir_path, filelist);
+    var result = localChanges.detect(base_dir_path, files);
 
     test.assertEqual(result.added.length, 2);
     test.assertEqual(result.deleted.length, 0);
-    test.assertEqual(filelist.length, 2);
+    test.assertEqual(result.modified.length, 0);
+    test.assertEqual(len(files), 2);
 
     // Calling it again will not make a change
-    var result = localChanges.detect(base_dir_path, filelist);
+    var result = localChanges.detect(base_dir_path, files);
 
     test.assertEqual(result.added.length, 0);
     test.assertEqual(result.deleted.length, 0);
-    test.assertEqual(filelist.length, 2);
+    test.assertEqual(result.modified.length, 0);
+    test.assertEqual(len(files), 2);
 
     // Delete a file and see if it reflects the change
     test_dir.remove_file('aaa.txt');
-    var result = localChanges.detect(base_dir_path, filelist);
+    var result = localChanges.detect(base_dir_path, files);
 
     test.assertEqual(result.added.length, 0);
     test.assertEqual(result.deleted.length, 1);
-    test.assertEqual(filelist.length, 1);
+    test.assertEqual(result.modified.length, 0);
+    test.assertEqual(len(files), 1);
 
+};
+
+exports.modification = function(test) {
+    var base_dir_path = get_base_dir_path();
+    var test_dir = new TestDir(base_dir_path);
+    test_dir.remove_base_dir();
+    test_dir.create_base_dir();
+    test_dir.create_file('aaa.txt');
+    test_dir.create_file('bbb.txt');
+
+    var files = {};
+
+    // Calling detect will add the two new files
+    var result = localChanges.detect(base_dir_path, files);
+
+    test.assertEqual(result.added.length, 2);
+    test.assertEqual(result.deleted.length, 0);
+    test.assertEqual(result.modified.length, 0);
+    test.assertEqual(len(files), 2);
+
+    // wait a sec, really
+    timeout(function () {
+        // modify one
+        test_dir.touch_file('aaa.txt');
+        var result = localChanges.detect(base_dir_path, files);
+
+        test.assertEqual(result.added.length, 0);
+        test.assertEqual(result.deleted.length, 0);
+        test.assertEqual(result.modified.length, 1);
+        test.assertEqual(len(files), 2);
+
+
+        // Calling it again will not make a change
+        var result = localChanges.detect(base_dir_path, files);
+
+        test.assertEqual(result.added.length, 0);
+        test.assertEqual(result.deleted.length, 0);
+        test.assertEqual(result.modified.length, 0);
+        test.assertEqual(len(files), 2);
+
+        // wait a sec, really
+        timeout(function () {
+            // modify one
+            test_dir.touch_file('bbb.txt');
+            var result = localChanges.detect(base_dir_path, files);
+
+            test.assertEqual(result.added.length, 0);
+            test.assertEqual(result.deleted.length, 0);
+            test.assertEqual(result.modified.length, 1);
+            test.assertEqual(len(files), 2);
+
+            // wait a sec, really
+            timeout(function () {
+                // modify two
+                test_dir.touch_file('aaa.txt');
+                test_dir.touch_file('bbb.txt');
+                var result = localChanges.detect(base_dir_path, files);
+
+                test.assertEqual(result.added.length, 0);
+                test.assertEqual(result.deleted.length, 0);
+                test.assertEqual(result.modified.length, 2);
+                test.assertEqual(len(files), 2);
+
+                // Finished!
+                test.done();
+            }, 1000);
+        }, 1000);
+    }, 1000);
+
+    test.waitUntilDone(5000);
 };
 
