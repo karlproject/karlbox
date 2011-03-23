@@ -14,3 +14,213 @@
 </p>
 </body>
 </html>
+
+
+
+
+
+
+
+
+<h1 class="kscreentitle">Add File</h1>
+<p></p>
+
+<form id="save" action="" class="k3_genericForm" method="post" enctype="multipart/form-data" accept-charset="utf-8">
+  <div>
+<!-- form/main.html -->
+<div>
+  <input type="hidden" name="_charset_" /></div>
+<div>
+  <input type="hidden" name="__formish_form__" value="save" />
+</div>
+
+<span>
+  <!-- form/fields.html -->
+  <div id="save-title--field" class="field save-title type-string widget-input required">
+  <!-- field/main.html -->
+  <label for="save-title" class="required">Title</label>
+
+  <div class="inputs"><span>
+  <!-- widgets/Input/widget.html -->
+  <input id="save-title" type="text" name="title" value="From karlbox" />
+</span></div>
+
+</div> <div id="save-tags--field" class="field save-tags type-sequence type-container widget-input">
+  <!-- field/main.html -->
+  <label for="save-tags">Tags</label>
+
+  <div class="inputs"><fieldset>
+  <span id="save-tags"></span>
+  <script language="javascript" type="text/javascript">
+//<![CDATA[
+    var tagdata = {"records": []};
+    $(document).ready(function() {
+        if (! tagdata.records) {
+            throw 'tagdata has no records.';
+        }
+
+        // get global page data
+        var app_url = $("#karl-app-url")[0].content;
+        var here_url = $("#karl-here-url")[0].content;
+
+        // bind the widget
+        $("#save-tags").karltagbox({
+            validateRegexp: "^[a-zA-Z0-9\-\._]+$",
+            ajax: app_url + "/jquery_tag_search",
+            prevals: tagdata.records,
+            docid: tagdata.docid,
+            showtag_url: app_url + "/showtag/",
+            tagusers_url: app_url + "/tagusers.html",
+            name: "tags"
+        });
+    });
+    //]]>
+  </script>
+</fieldset></div>
+
+</div> <div id="save-file--field" class="field save-file type-file widget-fileupload required error">
+  <!-- field/main.html -->
+  <label for="save-file" class="required">File</label>
+  <div class="fieldHelp">You can replace the file by clicking "remove"</div>
+  <div class="inputs">
+<div class="preview">
+  <div class="icon text_plain">
+
+
+  </div>
+
+</div>
+
+<input id="save-file-id" type="hidden" name="file.name" value="noname.txt" />
+<input id="save-file-mimetype" type="hidden" name="file.mimetype" value="text/plain" />
+<input id="save-file-default" type="hidden" name="file.default" value="99" />
+
+<span id="save-file">noname.txt</span>
+
+  <a id="save-file-remove">remove</a>
+  <input type="hidden" name="file.remove" id="save-file-remove-input" value="" />
+
+
+
+  <script language="javascript" type="text/javascript">
+$(document).ready(function(evt) {
+  // This event will only execute once.
+  $('#save-file-remove').one('click', function() {
+    // User deletes file. Hide the -code- and make the file input appear.
+    $('#save-file').replaceWith(
+      '<input id="save-file" type="file" name="file.file" />'
+    );
+    // Remove the checkbox.
+    $(this).remove()
+  });
+});
+  </script>
+
+
+
+
+</div>
+  <span class="error">is required</span>
+</div> <div id="save-sendalert--field" class="field save-sendalert type-boolean widget-checkbox">
+  <!-- field/main.html -->
+  <label for="save-sendalert">Send email alert to community members?</label>
+
+  <div class="inputs"><input id="save-sendalert" type="checkbox" name="sendalert" value="True" />Yes, send an alert</div>
+
+</div> <div id="save-security_state--field" class="field save-security_state type-string widget-radiochoice widget-selectchoice">
+  <!-- field/main.html -->
+  <label for="save-security_state">Security State</label>
+  <div class="fieldHelp">Items marked as private can only be seen by members of this community.</div>
+  <div class="inputs"><div class="karlselectionradiofield">
+
+
+<input type="radio" name="security_state" id="save-security_state-0" value="inherits" class="noborder" checked=" checked=&quot;checked&quot;" />
+<label for="save-security_state-0">Default</label>
+
+<input type="radio" name="security_state" id="save-security_state-1" value="private" class="noborder" />
+<label for="save-security_state-1">Private</label>
+
+</div></div>
+
+</div>
+</span>
+<div class="buttons clearafter formsubmit">
+  <button name="submit" type="submit" class="button primary_button">
+        <span>submit</span>
+      </button>
+
+
+
+      <button name="cancel" type="submit" class="button normal_button">
+        <span>cancel</span>
+      </button>
+
+</div>
+  </div>
+</form>
+
+  </div>
+
+          </div>
+        </div>
+        <div class="visualClear"></div>
+      </div>
+    </div>
+    <div class="visualClear"></div>
+  </div>
+  <div id="footer">
+  <div class="osi-logo">
+<a href="/"><img src="http://localhost:6543/static/r6661/images/osf-logo.gif" alt="" /></a>
+  </div>
+  <ul class="extra horListing">
+
+<li>
+ <a href="http://localhost:6543/communities/about-karl/wiki/karl-user-manual">help</a> | </li>
+<li>
+ <a href="http://localhost:6543/contact">contact</a> | </li>
+<li class="noborder">
+  <a href="http://localhost:6543/legal">legal</a>
+</li>
+
+  </ul>
+
+   <div id="offices-wrapper">
+ <ul id="offices-listing">
+     <li>
+       <a href="http://localhost:6543/offices/baltimore/">Baltimore</a>
+       <span class="officeslistSeparator">-</span>
+     </li> <li>
+       <a href="http://localhost:6543/offices/brussels/">Brussels</a>
+       <span class="officeslistSeparator">-</span>
+     </li> <li>
+       <a href="http://localhost:6543/offices/budapest/">Budapest</a>
+       <span class="officeslistSeparator">-</span>
+     </li> <li>
+       <a href="http://localhost:6543/offices/london/">London</a>
+       <span class="officeslistSeparator">-</span>
+     </li> <li>
+       <a href="http://localhost:6543/offices/national-foundation/">National Foundation</a>
+       <span class="officeslistSeparator">-</span>
+     </li> <li>
+       <a href="http://localhost:6543/offices/nyc/">New York</a>
+       <span class="officeslistSeparator">-</span>
+     </li> <li>
+       <a href="http://localhost:6543/offices/paris/">Paris</a>
+       <span class="officeslistSeparator">-</span>
+     </li> <li>
+       <a href="http://localhost:6543/offices/washington/">Washington</a>
+
+     </li>
+   </ul>
+
+
+
+ <p id="portal-copyright">&copy;2011 Open Society Foundations. All rights
+ reserved.</p>
+
+   </div>
+</div>
+</div>
+  </body>
+</html>
+
