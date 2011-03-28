@@ -1,8 +1,19 @@
 #kb-panel {
-    font-size: 1em;
+    font-size: 0.9em;
     font-family: Arial, sans-serif;
+    margin: 10px;
+    padding: 1em;
+    height: 260px;
+    background-color: silver;
+    border-radius: 1em;
+}
+
+#kb-headline {
+    font-size: 1.4em;
+    font-weight: bold;
 }
 
 #kb-last-updated {
     font-size: xx-small;
 }
+

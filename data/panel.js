@@ -27,7 +27,7 @@ onMessage = function onMessage(message) {
             return;
         }
         case 'sync_off': {
-            $('#kb-toggle-sync').text('Sync is ON')
+            $('#kb-toggle-sync').text('Sync is OFF')
             console.log('sent a sync_off type')
             return;
         }
