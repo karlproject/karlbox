@@ -17,3 +17,10 @@
     font-size: xx-small;
 }
 
+#kb-open-dashboard {
+    text-decoration: underline;
+}
+
+#kb-open-dashboard:hover {
+    cursor: pointer;
+}

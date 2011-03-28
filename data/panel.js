@@ -8,6 +8,12 @@ $('#kb-toggle-sync').click(function () {
     postMessage({type: 'toggle_sync'});
 });
 
+$('#kb-open-dashboard').click(function () {
+    postMessage({type: 'open_dashboard'});
+    return false;
+});
+
+
 onMessage = function onMessage(message) {
     // Handle messages sent from the add-on.  For example, when
     // a background file update happens, the panel might get
@@ -31,5 +37,6 @@ onMessage = function onMessage(message) {
             console.log('sent a sync_off type')
             return;
         }
+
     }
 }
