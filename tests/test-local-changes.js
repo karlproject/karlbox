@@ -1,15 +1,17 @@
+// Suppress console.log spewage in addon code
+const env = require("env");
+env.log = function () {};
 
 const localChanges = require('local-changes');
 const file = require("file");
 
-const {Cc,Ci,Cr} = require("chrome");
 
 // like setTimeout
 function timeout(func, delay) {
-    var timer = Cc['@mozilla.org/timer;1']
-        .createInstance(Ci.nsITimer); 
+    var timer = env.cc['@mozilla.org/timer;1']
+        .createInstance(env.ci.nsITimer);
     timer.initWithCallback(func, delay,
-        Ci.nsITimer.TYPE_ONE_SHOT); 
+        env.ci.nsITimer.TYPE_ONE_SHOT);
     return timer;
 }
 
