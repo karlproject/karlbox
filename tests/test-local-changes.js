@@ -2,6 +2,7 @@
 const env = require("env");
 env.log = function () {};
 
+
 const localChanges = require('local-changes');
 const file = require("file");
 
@@ -64,7 +65,8 @@ function TestDir(base_dir) {
 };
 
 function get_base_dir_path() {
-    return '/tmp/karlboxtest';
+    env.base_dir = '/tmp/karlboxtest';
+    return env.base_dir;
 }
 
 function len(d) {
@@ -80,15 +82,19 @@ function len(d) {
 exports.test_empty = function(test) {
     var base_dir_path = get_base_dir_path();
     var test_dir = new TestDir(base_dir_path);
-    test_dir.remove_base_dir();
 
-    var result = localChanges.detect(base_dir_path, []);
+    // Empty, then create blank dir
+    test_dir.remove_base_dir();
+    test_dir.create_base_dir();
+
+    var result = localChanges.detect([]);
 
     test.assertEqual(result.added.length, 0);
     test.assertEqual(result.deleted.length, 0);
     test.assertEqual(result.modified.length, 0);
 
 };
+
 
 exports.simple = function(test) {
     var base_dir_path = get_base_dir_path();
@@ -101,7 +107,7 @@ exports.simple = function(test) {
     var files = {};
 
     // Calling detect will add the two new files
-    var result = localChanges.detect(base_dir_path, files);
+    var result = localChanges.detect(files);
 
     test.assertEqual(result.added.length, 2);
     test.assertEqual(result.deleted.length, 0);
@@ -109,7 +115,7 @@ exports.simple = function(test) {
     test.assertEqual(len(files), 2);
 
     // Calling it again will not make a change
-    var result = localChanges.detect(base_dir_path, files);
+    var result = localChanges.detect(files);
 
     test.assertEqual(result.added.length, 0);
     test.assertEqual(result.deleted.length, 0);
@@ -118,7 +124,7 @@ exports.simple = function(test) {
 
     // Delete a file and see if it reflects the change
     test_dir.remove_file('aaa.txt');
-    var result = localChanges.detect(base_dir_path, files);
+    var result = localChanges.detect(files);
 
     test.assertEqual(result.added.length, 0);
     test.assertEqual(result.deleted.length, 1);
@@ -138,7 +144,7 @@ exports.modification = function(test) {
     var files = {};
 
     // Calling detect will add the two new files
-    var result = localChanges.detect(base_dir_path, files);
+    var result = localChanges.detect(files);
 
     test.assertEqual(result.added.length, 2);
     test.assertEqual(result.deleted.length, 0);
@@ -149,7 +155,7 @@ exports.modification = function(test) {
     timeout(function () {
         // modify one
         test_dir.touch_file('aaa.txt');
-        var result = localChanges.detect(base_dir_path, files);
+        var result = localChanges.detect(files);
 
         test.assertEqual(result.added.length, 0);
         test.assertEqual(result.deleted.length, 0);
@@ -158,7 +164,7 @@ exports.modification = function(test) {
 
 
         // Calling it again will not make a change
-        var result = localChanges.detect(base_dir_path, files);
+        var result = localChanges.detect(files);
 
         test.assertEqual(result.added.length, 0);
         test.assertEqual(result.deleted.length, 0);
@@ -169,7 +175,7 @@ exports.modification = function(test) {
         timeout(function () {
             // modify one
             test_dir.touch_file('bbb.txt');
-            var result = localChanges.detect(base_dir_path, files);
+            var result = localChanges.detect(files);
 
             test.assertEqual(result.added.length, 0);
             test.assertEqual(result.deleted.length, 0);
@@ -181,7 +187,7 @@ exports.modification = function(test) {
                 // modify two
                 test_dir.touch_file('aaa.txt');
                 test_dir.touch_file('bbb.txt');
-                var result = localChanges.detect(base_dir_path, files);
+                var result = localChanges.detect(files);
 
                 test.assertEqual(result.added.length, 0);
                 test.assertEqual(result.deleted.length, 0);
@@ -196,4 +202,3 @@ exports.modification = function(test) {
 
     test.waitUntilDone(5000);
 };
-
