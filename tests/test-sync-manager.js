@@ -41,12 +41,10 @@ exports.test_wrapped_file_exists = function(test) {
     test.assert(sm.WrappedFile);
 };
 
-/*
 exports.test_wrapped_file_basics = function(test) {
     SetupTestDir();
     var f = sm.WrappedFile(base_dir, "aaa.txt");
     test.assert(f);
 };
-*/
 
 
