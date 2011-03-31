@@ -36,15 +36,20 @@ exports.test_test_run = function(test) {
     test.pass('Unit test running!');
 };
 
-exports.test_wrapped_file_exists = function(test) {
-    SetupTestDir();
-    test.assert(sm.WrappedFile);
+exports.test_sync_file_exists = function(test) {
+    test.assert(sm.SyncFile);
 };
 
-exports.test_wrapped_file_basics = function(test) {
+exports.test_sync_file_basics = function(test) {
     SetupTestDir();
-    var f = sm.WrappedFile(base_dir, "aaa.txt");
-    test.assert(f);
+    var fn = file.join(base_dir, "aaa.txt");
+    var f = new sm.SyncFile(fn);
+    test.assertEqual(f.fullpath, fn);
+    test.assert(f.last_modified > 1301604212000);
+    test.assertEqual(f.readEncoded(), "QSBmaWxl");
 };
 
+exports.test_sync_list_exists = function(test) {
+    test.assert(sm.SyncList);
+};
 
