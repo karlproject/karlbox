@@ -147,11 +147,50 @@ exports.test_sync_list_syncd_first_modified = function(test) {
             var f2 = get_file("aaa.txt");
             sl.push(f2);
 
-
             var r = sl.sync_map[full_fn];
             test.assert(r);
             test.assertEqual(r.status, "modified");
             test.assertEqual(r.last_local, f2.last_modified);
+            test.assertEqual(r.last_remote, f1.last_modified);
+        });
+
+    test.assert(1);
+}
+
+exports.test_sync_list_syncd_second_modified = function(test) {
+    // File was added and syncd.  Then modified, first run
+    // through.  Now it is the second run through.
+
+    // Bootstrap
+    SetupTestDir();
+    var full_fn = file.join(base_dir, "aaa.txt");
+    var f1 = get_file("aaa.txt");
+    var sl = new sm.SyncList(
+            {full_fn: {
+                status: "syncd",
+                last_local: f1.last_modified,
+                last_remote: f1.last_modified
+            }
+            });
+
+    // Now change the file, push it on. We need to wait a second to
+    // so the last modification time is rev'd.
+    timeout(1000, function () {
+
+            // First run through
+            touch_file("aaa.txt");
+            var f2 = get_file("aaa.txt");
+            sl.push(f2);
+
+            // Second run through
+            touch_file("aaa.txt");
+            var f3 = get_file("aaa.txt");
+            sl.push(f3);
+
+            var r = sl.sync_map[full_fn];
+            test.assert(r);
+            test.assertEqual(r.status, "modified");
+            test.assertEqual(r.last_local, f3.last_modified);
             test.assertEqual(r.last_remote, f1.last_modified);
         });
 
