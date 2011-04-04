@@ -8,9 +8,12 @@ const sm = require("sync-manager");
 
 // Override global
 var base_dir = '/tmp/karlboxtest';
-env.base_dir = base_dir;
+var _save_base_dir = '';
 
 function SetupTestDir() {
+    
+    _save_base_dir = env._save_base_dir;
+    env.base_dir = base_dir;
 
     // First remove the test dir if it exists
     if (file.exists(base_dir)) {
@@ -28,6 +31,13 @@ function SetupTestDir() {
     });
 
 }
+
+function CleanupTestDir() {
+
+    env.base_dir = base_dir;
+
+}
+
 
 // like setTimeout
 function timeout(delay, func) {
@@ -286,6 +296,7 @@ exports.test_sync_list_sync = function(test) {
 };
 
 
+/*
 exports.test_sync_list_sync_old = function(test) {
     // Make a sync_map, get back objects needing upload
 
@@ -301,3 +312,7 @@ exports.test_sync_list_sync_old = function(test) {
     // XXX Need a better test, with a pluggable request
     test.pass("ok");
 };
+*/
+
+
+

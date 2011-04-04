@@ -65,7 +65,7 @@ function TestDir(base_dir) {
 };
 
 function get_base_dir_path() {
-    env.base_dir = '/tmp/karlboxtest';
+    //env.base_dir = '/tmp/karlboxtest';
     return env.base_dir;
 }
 
