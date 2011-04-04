@@ -259,6 +259,45 @@ exports.test_sync_list_get_uploads = function(test) {
     sl.sync_map[f1.fullpath].status = "syncd";
 
     var matching = sl.get_uploads();
-    //sl.sync();
     test.assertEqual(matching.length, 3);
+};
+
+exports.test_sync_list_prepare_sync = function(test) {
+    SetupTestDir();
+    var sl = new sm.SyncList({});
+    var f1 = sl.push(get_file("aaa.txt"));
+    var f2 = sl.push(get_file("bbb.txt"));
+    var f3 = sl.push(get_file("ccc.txt"));
+
+    var payload = sl.prepare_sync();
+    test.assert(payload['filename-0']);
+    test.assert(payload['binfile-0']);
+};
+
+exports.test_sync_list_sync = function(test) {
+    SetupTestDir();
+    var sl = new sm.SyncList({});
+    var f1 = sl.push(get_file("aaa.txt"));
+    var f2 = sl.push(get_file("bbb.txt"));
+    var f3 = sl.push(get_file("ccc.txt"));
+
+    sl.sync();
+    test.pass("ok");
+};
+
+
+exports.test_sync_list_sync_old = function(test) {
+    // Make a sync_map, get back objects needing upload
+
+    // Bootstrap
+    SetupTestDir();
+    var sl = new sm.SyncList({});
+
+    var f1 = sl.push(get_file("aaa.txt"));
+    var f2 = sl.push(get_file("bbb.txt"));
+    var f3 = sl.push(get_file("ccc.txt"));
+
+    //sl.sync();
+    // XXX Need a better test, with a pluggable request
+    test.pass("ok");
 };
