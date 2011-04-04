@@ -32,12 +32,6 @@ function SetupTestDir() {
 
 }
 
-function CleanupTestDir() {
-
-    env.base_dir = base_dir;
-
-}
-
 
 // like setTimeout
 function timeout(delay, func) {
@@ -163,9 +157,10 @@ exports.test_sync_list_syncd_first_modified = function(test) {
         test.assertEqual(r.status, "modified");
         test.assertEqual(r.last_local, f2.last_modified);
         test.assertEqual(r.last_remote, f1.last_modified);
+        test.done();
     });
 
-    test.assert(1);
+    test.waitUntilDone(5000);
 }
 
 exports.test_sync_list_syncd_second_modified = function(test) {
@@ -192,20 +187,26 @@ exports.test_sync_list_syncd_second_modified = function(test) {
         touch_file("aaa.txt");
         var f2 = get_file("aaa.txt");
         sl.push(f2);
+        
+        // wait another, to modify again
+        timeout(1000, function () {
+            // Second run through
+            touch_file("aaa.txt");
+            var f3 = get_file("aaa.txt");
+            sl.push(f3);
 
-        // Second run through
-        touch_file("aaa.txt");
-        var f3 = get_file("aaa.txt");
-        sl.push(f3);
+            var r = sl.sync_map[full_fn];
+            test.assert(r);
+            test.assertEqual(r.status, "modified");
+            test.assertEqual(r.last_local, f3.last_modified);
+            test.assertEqual(r.last_remote, f1.last_modified);
+            
+            test.done()
+        });
 
-        var r = sl.sync_map[full_fn];
-        test.assert(r);
-        test.assertEqual(r.status, "modified");
-        test.assertEqual(r.last_local, f3.last_modified);
-        test.assertEqual(r.last_remote, f1.last_modified);
     });
 
-    test.assert(1);
+    test.waitUntilDone(5000);
 }
 
 exports.test_sync_list_deleted = function(test) {
