@@ -15,7 +15,10 @@ function MultiPoster(options) {
                 url: this.options.url,
                 content: this.options.content
             });
-            this.options.onComplete();
+            var response = {
+                json: {"status": "modified", "result": "OK", "filename": this.options.content.filename}
+            };
+            this.options.onComplete(response);
         };
     }
 
@@ -51,56 +54,59 @@ exports.test_btoa = function(test) {
 };
 
 exports.test_post_zero_file = function(test) {
-    var completed = 0;
+    var completed = [];
     var poster = MultiPoster({
         url: 'http://localhost:6543/communities/default/files/new_upload_file.json',
         authHeader: 'Basic YWRtaW46YWRtaW4=',
         baseDir: '/testdir',
         fileNames: [],
-        onComplete: function() {
-            completed += 1;
+        onComplete: function(json_results) {
+            completed.push(json_results);
         }
     });
     poster.post();
 
-    test.assertEqual(completed, 1);
+    test.assertEqual(completed.length, 1);
+    test.assertEqual(completed[0].length, 0);
     test.assertEqual(poster.posted.length, 0);
 };
 
 exports.test_post_single_file = function(test) {
-    var completed = 0;
+    var completed = [];
     var poster = MultiPoster({
         url: 'http://localhost:6543/communities/default/files/new_upload_file.json',
         authHeader: 'Basic YWRtaW46YWRtaW4=',
         baseDir: '/testdir',
         fileNames: ['aaa.txt'],
-        onComplete: function() {
-            completed += 1;
+        onComplete: function(json_results) {
+            completed.push(json_results);
         }
     });
     poster.post();
 
-    test.assertEqual(completed, 1);
+    test.assertEqual(completed.length, 1);
+    test.assertEqual(completed[0].length, 1);
     test.assertEqual(poster.posted.length, 1);
     test.assertEqual(poster.posted[0].url, 'http://localhost:6543/communities/default/files/new_upload_file.json');
     test.assertEqual(poster.posted[0].content.binfile, 'aaa.txt content');
     test.assertEqual(poster.posted[0].content.filename, 'aaa.txt');
 };
 
-exports.test_post_more_file = function(test) {
-    var completed = 0;
+exports.test_post_more_files = function(test) {
+    var completed = [];
     var poster = MultiPoster({
         url: 'http://localhost:6543/communities/default/files/new_upload_file.json',
         authHeader: 'Basic YWRtaW46YWRtaW4=',
         baseDir: '/testdir',
         fileNames: ['aaa.txt', 'bbb.txt', 'ccc.txt', 'ddd.txt'],
-        onComplete: function() {
-            completed += 1;
+        onComplete: function(json_results) {
+            completed.push(json_results);
         }
     });
     poster.post();
 
-    test.assertEqual(completed, 1);
+    test.assertEqual(completed.length, 1);
+    test.assertEqual(completed[0].length, 4);
     test.assertEqual(poster.posted.length, 4);
 
     test.assertEqual(poster.posted[0].url, 'http://localhost:6543/communities/default/files/new_upload_file.json');
