@@ -27,13 +27,25 @@ function MultiPoster(options) {
         var txt = {
             '/testdir/aaa.txt': 'aaa.txt content',
             '/testdir/bbb.txt': 'bbb.txt content',
-            '/testdir/ccc.txt': 'ccc.txt content',
-            '/testdir/ddd.txt': 'ddd.txt content'
+            '/testdir/ccc.html': 'ccc.html content',
+            '/testdir/ddd.pdf': 'ddd.pdf content'
         }[path];
         if (txt === undefined) {
             throw Error('IO error');
         }
         return txt;
+    };
+    mp.plugs.mimetype = function(path) {
+        var mimeType = {
+            '/testdir/aaa.txt': 'text/plain',
+            '/testdir/bbb.txt': 'text/plain',
+            '/testdir/ccc.html': 'text/html',
+            '/testdir/ddd.pdf': 'application/pdf'
+        }[path];
+        if (mimeType === undefined) {
+            throw Error('IO error');
+        }
+        return mimeType;
     };
     mp.plugs.btoa = function(txt) {
         return txt;
@@ -47,6 +59,10 @@ function MultiPoster(options) {
 
 exports.test_readfile = function(test) {
   test.pass('TODO Need to test readfile.');
+};
+
+exports.test_mimetype = function(test) {
+  test.pass('TODO Need to test mimetype.');
 };
 
 exports.test_btoa = function(test) {
@@ -90,6 +106,7 @@ exports.test_post_single_file = function(test) {
     test.assertEqual(poster.posted[0].url, 'http://localhost:6543/communities/default/files/new_upload_file.json');
     test.assertEqual(poster.posted[0].content.binfile, 'aaa.txt content');
     test.assertEqual(poster.posted[0].content.filename, 'aaa.txt');
+    test.assertEqual(poster.posted[0].content.mimetype, 'text/plain');
 };
 
 exports.test_post_more_files = function(test) {
@@ -98,7 +115,7 @@ exports.test_post_more_files = function(test) {
         url: 'http://localhost:6543/communities/default/files/new_upload_file.json',
         authHeader: 'Basic YWRtaW46YWRtaW4=',
         baseDir: '/testdir',
-        fileNames: ['aaa.txt', 'bbb.txt', 'ccc.txt', 'ddd.txt'],
+        fileNames: ['aaa.txt', 'bbb.txt', 'ccc.html', 'ddd.pdf'],
         onComplete: function(json_results) {
             completed.push(json_results);
         }
@@ -112,18 +129,22 @@ exports.test_post_more_files = function(test) {
     test.assertEqual(poster.posted[0].url, 'http://localhost:6543/communities/default/files/new_upload_file.json');
     test.assertEqual(poster.posted[0].content.binfile, 'aaa.txt content');
     test.assertEqual(poster.posted[0].content.filename, 'aaa.txt');
+    test.assertEqual(poster.posted[0].content.mimetype, 'text/plain');
 
     test.assertEqual(poster.posted[1].url, 'http://localhost:6543/communities/default/files/new_upload_file.json');
     test.assertEqual(poster.posted[1].content.binfile, 'bbb.txt content');
     test.assertEqual(poster.posted[1].content.filename, 'bbb.txt');
+    test.assertEqual(poster.posted[1].content.mimetype, 'text/plain');
 
     test.assertEqual(poster.posted[2].url, 'http://localhost:6543/communities/default/files/new_upload_file.json');
-    test.assertEqual(poster.posted[2].content.binfile, 'ccc.txt content');
-    test.assertEqual(poster.posted[2].content.filename, 'ccc.txt');
+    test.assertEqual(poster.posted[2].content.binfile, 'ccc.html content');
+    test.assertEqual(poster.posted[2].content.filename, 'ccc.html');
+    test.assertEqual(poster.posted[2].content.mimetype, 'text/html');
 
     test.assertEqual(poster.posted[3].url, 'http://localhost:6543/communities/default/files/new_upload_file.json');
-    test.assertEqual(poster.posted[3].content.binfile, 'ddd.txt content');
-    test.assertEqual(poster.posted[3].content.filename, 'ddd.txt');
+    test.assertEqual(poster.posted[3].content.binfile, 'ddd.pdf content');
+    test.assertEqual(poster.posted[3].content.filename, 'ddd.pdf');
+    test.assertEqual(poster.posted[3].content.mimetype, 'application/pdf');
 
 };
 
