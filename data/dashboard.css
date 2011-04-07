@@ -1,3 +1,27 @@
 body {
     font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
 }
+
+#kb-setupform {
+    padding: 5em;
+    margin: 5em;
+    display: none;
+}
+#kb-header {
+    height: 2em;
+    background-color: #e0ffff;
+    padding: 1em;
+}
+
+#kb-showsetup {
+    float: right;
+    display: block;
+    text-decoration: underline;
+}
+
+#kb-showsetup:hover {
+    cursor: pointer;
+}
+

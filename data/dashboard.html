@@ -4,7 +4,26 @@
     <link href="dashboard.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
+<div id="kb-header">
+    <a id="kb-showsetup">setup</a>
+
     <div id="kb-headline">Karlbox Dashboard</div>
+</div>
+<form id="kb-setupform" method="post" action=".">
+    <fieldset>
+        <label for="kb-username">Username</label>
+        <input id="kb-username" value="kdkdkd"/>
+    </fieldset>
+    <fieldset>
+        <label for="kb-password">Password</label>
+        <input id="kb-password" type="password"/>
+    </fieldset>
+    <fieldset>
+        <label for="kb-karlurl">KARL URL</label>
+        <input id="kb-karlurl" value="http://localhost:6543/"/>
+    </fieldset>
+    <button id="kb-savesetup">Save</button>
+</form>
 </body>
 
 </html>
