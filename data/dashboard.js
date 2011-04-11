@@ -1,5 +1,5 @@
 $('#kb-showsetup').click(function () {
-    postMessage({type: 'fetch_setupdata'});
+    $('#kb-setupform').toggle('slow');
 });
 
 $('#kb-savesetup').click(function (evt) {
@@ -10,10 +10,9 @@ $('#kb-savesetup').click(function (evt) {
     var setup = {username: username,
         password: password, karlurl: karlurl};
     var message = {type: "store_setupdata", value: setup};
-    postMessage(message);
+    //postMessage(message);
     return false;
 });
-
 
 onMessage = function onMessage(message) {
     // Handle messages sent from the add-on.

@@ -7,7 +7,7 @@ function get_dashboard() {
     var dashboard = page_worker.Page({
                 contentURL: data.url("dashboard.html"),
                 contentScriptFile: [
-                    data.url("jquery-1.5.1.min.js"),
+                    data.url("jquery-1.4.4.js"),
                     data.url("panel.js")
                 ],                contentScriptWhen: "ready",
                 onMessage: function(message) {
