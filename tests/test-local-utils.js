@@ -18,7 +18,7 @@ function test_dir(dirname) {
 exports.test_list_files = function(test) {
     var lr = localUtils.LocalRoot({baseDir: test_dir('files1')});
     var listFiles = lr.listFiles();
-    test.assertEqual(listFiles.length, 0);
+    test.assertEqual(listFiles.length, 1);
 
     lr = localUtils.LocalRoot({baseDir: test_dir('files2')});
     listFiles = lr.listFiles();
