@@ -8,6 +8,7 @@ function MultiPoster(options) {
 
     mp.posted = [];
 
+    // fake some functions for easy testability
     function _FakeRequest(options) {
         this.options = options;
         this.post = function() {
@@ -22,33 +23,44 @@ function MultiPoster(options) {
         };
     }
 
-    // fake some functions for easy testability
-    mp.plugs.readfile = function(path) {
-        var txt = {
-            '/testdir/aaa.txt': 'aaa.txt content',
-            '/testdir/bbb.txt': 'bbb.txt content',
-            '/testdir/ccc.html': 'ccc.html content',
-            '/testdir/ddd.pdf': 'ddd.pdf content'
-        }[path];
-        if (txt === undefined) {
-            throw Error('IO error');
-        }
-        return txt;
+    function _FakeLocalRoot(options) {
+        this.options = options;
+        
+        this.readFile = function(fileName) {
+            var txt = {
+                'aaa.txt': 'aaa.txt content',
+                'bbb.txt': 'bbb.txt content',
+                'ccc.html': 'ccc.html content',
+                'ddd.pdf': 'ddd.pdf content'
+            }[fileName];
+            if (txt === undefined) {
+                throw Error('IO error');
+            }
+            return txt;
+        };
+
+        this.mimeType = function(fileName) {
+            var mimeType = {
+                'aaa.txt': 'text/plain',
+                'bbb.txt': 'text/plain',
+                'ccc.html': 'text/html',
+                'ddd.pdf': 'application/pdf'
+            }[fileName];
+            if (mimeType === undefined) {
+                //throw Error('IO error');
+            }
+            return mimeType;
+        };
+
+        this.btoa = function(txt) {
+            return txt;
+        };
+
+        // listFiles, localModification are not called from here.
     };
-    mp.plugs.mimetype = function(path) {
-        var mimeType = {
-            '/testdir/aaa.txt': 'text/plain',
-            '/testdir/bbb.txt': 'text/plain',
-            '/testdir/ccc.html': 'text/html',
-            '/testdir/ddd.pdf': 'application/pdf'
-        }[path];
-        if (mimeType === undefined) {
-            throw Error('IO error');
-        }
-        return mimeType;
-    };
-    mp.plugs.btoa = function(txt) {
-        return txt;
+
+    mp.plugs.LocalRoot = function(options) {
+        return new _FakeLocalRoot(options);
     };
     mp.plugs.Request = function(options) {
         return new _FakeRequest(options);
