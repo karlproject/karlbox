@@ -69,18 +69,6 @@ function MultiPoster(options) {
     return mp;
 }
 
-exports.test_readfile = function(test) {
-  test.pass('TODO Need to test readfile.');
-};
-
-exports.test_mimetype = function(test) {
-  test.pass('TODO Need to test mimetype.');
-};
-
-exports.test_btoa = function(test) {
-  test.pass('TODO Need to test btoa.');
-};
-
 exports.test_post_zero_file = function(test) {
     var completed = [];
     var poster = MultiPoster({

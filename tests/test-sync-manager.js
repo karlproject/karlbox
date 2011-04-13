@@ -61,6 +61,8 @@ exports.test_test_run = function(test) {
     test.pass('Unit test running!');
 };
 
+/*
+ 
 exports.test_sync_file_exists = function(test) {
     test.assert(sm.SyncFile);
 };
@@ -295,6 +297,7 @@ exports.test_sync_list_sync = function(test) {
     sl.sync();
     test.pass("ok");
 };
+*/
 
 
 /*
