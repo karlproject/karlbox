@@ -49,6 +49,11 @@ exports.test_read_file = function(test) {
     }, /^path does not exist/);
 };
 
+exports.test_write_file = function(test) {
+    test.pass('XXX TODO write this test');
+};
+
+
 exports.test_mime_type = function(test) {
     var lr = localUtils.LocalRoot({baseDir: test_dir('files2')});
     var mime = lr.mimeType('unitext.txt');
