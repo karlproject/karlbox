@@ -78,18 +78,3 @@ exports.test_make_dashboard = function(test) {
     test.waitUntilDone(800);
 };
 
-/*
- exports.test_simple_worker = function(test) {
-
- var cs = "$('#kb-showsetup').click()";
-
- function f(message) {
- test.assertEqual(message.type, "fetch_setupdata")
- test.done();
- }
-
- run_worker(cs, f);
-
- test.waitUntilDone(900);
- }
- */
