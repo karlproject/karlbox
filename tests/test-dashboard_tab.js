@@ -42,7 +42,7 @@ exports.test_init_logins = function(test) {
     delete storage.lastlogin;
 
     var lastlogin = dbt.get_lastlogin();
-    test.assert("lastlogin" in storage);  // Should now exist
+    test.assert("lastlogin" in storage.preferences);  // Should now exist
 }
 
 exports.test_set_lastlogin = function(test) {
