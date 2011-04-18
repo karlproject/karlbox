@@ -3,6 +3,7 @@ const localUtils = require("local-utils");
 const url = require("url");
 const file = require("file");
 const data = require('self').data;
+const {Cc,Ci,Cr} = require("chrome");
 
 
 function test_dir(dirname) {
@@ -14,6 +15,96 @@ function test_dir(dirname) {
     var testDir = file.join(baseDir, dirname);
     return testDir;
 }
+
+function tmp_dir() {
+    var dirService = Cc["@mozilla.org/file/directory_service;1"].
+        getService(Ci.nsIProperties);
+    var mozFile = dirService.get("TmpD", Ci.nsIFile);
+    mozFile.append("karlboxtest");
+    mozFile.createUnique(Ci.nsIFile.DIRECTORY_TYPE, 0755);
+    return mozFile.path;
+}
+
+function rmdir(path) {
+    // aka. rm -rf
+    file.list(path).forEach(function(fname) {
+        var fpath = file.join(path, fname);
+        var mozFile = Cc['@mozilla.org/file/local;1']
+             .createInstance(Ci.nsILocalFile);
+        mozFile.initWithPath(fpath);
+        if (mozFile.isDirectory()) {
+            rmdir(fpath);
+        } else {
+            file.remove(fpath);
+        }
+    });
+    file.rmdir(path);
+}
+
+
+
+
+exports.test_exists_root = function(test) {
+    var lr = localUtils.LocalRoot({baseDir: test_dir('files1')});
+    test.assert(lr.existsRoot());
+
+    lr = localUtils.LocalRoot({baseDir: test_dir('filesNOSUCH')});
+    test.assert(! lr.existsRoot());
+
+    // true for files.
+    var lr = localUtils.LocalRoot({baseDir: test_dir('somefile')});
+    test.assert(lr.existsRoot());
+};
+
+exports.test_check_root = function(test) {
+    var lr = localUtils.LocalRoot({baseDir: test_dir('files1')});
+    test.assert(! lr.checkRoot('cookie'));
+
+    lr = localUtils.LocalRoot({baseDir: test_dir('files3')});
+    test.assert(lr.checkRoot('cookie'));
+
+    lr = localUtils.LocalRoot({baseDir: test_dir('files4')});
+    test.assert(! lr.checkRoot('cookie'));
+
+    lr = localUtils.LocalRoot({baseDir: test_dir('files3')});
+    test.assert(! lr.checkRoot('chocolete'));
+
+    lr = localUtils.LocalRoot({baseDir: test_dir('files4')});
+    test.assert(lr.checkRoot('chocolete'));
+
+};
+
+exports.test_create_root = function(test) {
+    var root = tmp_dir();
+    function rdir(name) {
+        return file.join(root, name);
+    }
+    try {
+        var lr = localUtils.LocalRoot({baseDir: rdir('filesX')});
+        test.assert(! lr.existsRoot());
+        
+        lr.createRoot('icecream');
+        test.assert(lr.checkRoot('icecream'));
+        test.assert(! lr.checkRoot('chuclet'));
+
+        // cannot create upon an existing root
+        test.assertRaises(function() {
+            lr.createRoot('dust');
+        }, /^Root already exists./);
+
+        // can create another one
+        lr = localUtils.LocalRoot({baseDir: rdir('filesY')});
+        test.assert(! lr.existsRoot());
+        lr.createRoot('chuklet');
+        test.assert(lr.checkRoot('chuclet'));
+        test.assert(! lr.checkRoot('icecream'));
+
+    } finally {
+        // clean up
+        rmdir(root);
+    }
+    test.pass(true);
+};
 
 exports.test_list_files = function(test) {
     var lr = localUtils.LocalRoot({baseDir: test_dir('files1')});
