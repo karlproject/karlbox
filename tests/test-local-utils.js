@@ -85,7 +85,7 @@ exports.test_create_root = function(test) {
         
         lr.createRoot('icecream');
         test.assert(lr.checkRoot('icecream'));
-        test.assert(! lr.checkRoot('chuclet'));
+        test.assert(! lr.checkRoot('chuklet'));
 
         // cannot create upon an existing root
         test.assertRaises(function() {
@@ -96,7 +96,7 @@ exports.test_create_root = function(test) {
         lr = localUtils.LocalRoot({baseDir: rdir('filesY')});
         test.assert(! lr.existsRoot());
         lr.createRoot('chuklet');
-        test.assert(lr.checkRoot('chuclet'));
+        test.assert(lr.checkRoot('chuklet'));
         test.assert(! lr.checkRoot('icecream'));
 
     } finally {
@@ -141,13 +141,50 @@ exports.test_read_file = function(test) {
 };
 
 exports.test_write_file = function(test) {
-    test.pass('XXX TODO write this test');
+    var root = tmp_dir();
+    function fn(name) {
+        return file.join(root, name);
+    }
+    try {
+        var lr = localUtils.LocalRoot({baseDir: root});
+        
+        var s = 'Test content 1';
+        lr.writeFile('file1', s);
+
+        // read it back
+        var txt = lr.readFile('file1')
+        test.assertEqual(txt, s);
+
+        
+        s = 'Test content 2';
+        lr.writeFile('file2', s);
+
+        // read it back
+        txt = lr.readFile('file2')
+        test.assertEqual(txt, s);
+
+
+
+    } finally {
+        // clean up
+        rmdir(root);
+    }
+    test.pass(true);
 };
 
 exports.test_exists = function(test) {
-    test.pass('XXX TODO write this test');
-};
+    var lr = localUtils.LocalRoot({baseDir: test_dir('files5')});
 
+    test.assert(lr.exists('afile'));
+
+    ///test.assert(lr.exists('afolder/afile'));
+
+    // a directory yields false.
+    test.assert(! lr.exists('afolder'));
+
+    test.assert(! lr.exists('NOSUCH'));
+
+};
 
 exports.test_mime_type = function(test) {
     var lr = localUtils.LocalRoot({baseDir: test_dir('files2')});
