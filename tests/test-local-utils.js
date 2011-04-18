@@ -120,6 +120,11 @@ exports.test_list_files = function(test) {
     test.assertEqual(listFiles[3], 'unitext.txt');
 };
 
+exports.test_list_files_ignores_dots = function(test) {
+    var lr = localUtils.LocalRoot({baseDir: test_dir('files4')});
+    var listFiles = lr.listFiles();
+    test.assertEqual(listFiles.length, 0);
+};
 
 exports.test_read_file = function(test) {
     var lr = localUtils.LocalRoot({baseDir: test_dir('files2')});
