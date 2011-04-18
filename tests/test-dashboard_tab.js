@@ -7,6 +7,7 @@ const storage = require("simple-storage").storage;
 const karlurl = "http://localhost:6543/";
 const fakeuser = "someusername";
 const fakepasswd = "somepassword";
+const karlcommunity = "default";
 
 // like setTimeout
 function timeout(delay, func) {
@@ -50,10 +51,16 @@ exports.test_set_lastlogin = function(test) {
     // Get into the initial state that a completely new user will have
     delete storage.lastlogin;
 
-    dbt.set_lastlogin(karlurl, fakeuser, fakepasswd);
+    dbt.set_lastlogin({
+        karlurl: karlurl,
+        karlcommunity: karlcommunity,
+        username: fakeuser, 
+        password: fakepasswd
+    });
 
     var lastlogin = dbt.get_lastlogin();
     test.assertEqual(lastlogin.karlurl, karlurl);
+    test.assertEqual(lastlogin.karlcommunity, karlcommunity);
     test.assertEqual(lastlogin.username, fakeuser);
     test.assertEqual(lastlogin.password, fakepasswd);
 };
