@@ -9,11 +9,13 @@ $('#kb-savesetup').click(function (evt) {
     var password = $('#kb-password').val();
     var karlurl = $('#kb-karlurl').val();
     var karlcommunity = $('#kb-karlcommunity').val();
+    var localdir = $('#kb-localdir').val();
     var setup = {
         username: username,
         password: password,
         karlurl: karlurl,
-        karlcommunity: karlcommunity    
+        karlcommunity: karlcommunity,
+        localdir: localdir 
     };
     var message = {type: "store_setupdata", value: setup};
     postMessage(message);
@@ -29,6 +31,7 @@ onMessage = function onMessage(message) {
             $('#kb-password').val(mv.password);
             $('#kb-karlurl').val(mv.karlurl);
             $('#kb-karlcommunity').val(mv.karlcommunity);
+            $('#kb-localdir').val(mv.localdir);
             return;
         }
         case 'finish_storesetup': {
