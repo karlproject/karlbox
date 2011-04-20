@@ -69,6 +69,74 @@ function MultiPoster(options) {
     return mp;
 }
 
+function MultiGetter(options) {
+
+    var mp = remoteUtils.MultiGetter(options);
+
+    mp.posted = [];
+
+    // fake some functions for easy testability
+    function _FakeRequest(options) {
+        this.options = options;
+        this.post = function() {
+            mp.posted.push({
+                url: this.options.url,
+                content: this.options.content
+            });
+            var response = {
+                json: {"status": "modified", "result": "OK", "filename": this.options.content.filename}
+            };
+            this.options.onComplete(response);
+        };
+    }
+
+    function _FakeLocalRoot(options) {
+        this.options = options;
+        
+        this.readFile = function(fileName) {
+            var txt = {
+                'aaa.txt': 'aaa.txt content',
+                'bbb.txt': 'bbb.txt content',
+                'ccc.html': 'ccc.html content',
+                'ddd.pdf': 'ddd.pdf content'
+            }[fileName];
+            if (txt === undefined) {
+                throw Error('IO error');
+            }
+            return txt;
+        };
+
+        this.mimeType = function(fileName) {
+            var mimeType = {
+                'aaa.txt': 'text/plain',
+                'bbb.txt': 'text/plain',
+                'ccc.html': 'text/html',
+                'ddd.pdf': 'application/pdf'
+            }[fileName];
+            if (mimeType === undefined) {
+                //throw Error('IO error');
+            }
+            return mimeType;
+        };
+
+        this.btoa = function(txt) {
+            return txt;
+        };
+
+        // listFiles, localModification are not called from here.
+    };
+
+    mp.plugs.LocalRoot = function(options) {
+        return new _FakeLocalRoot(options);
+    };
+    mp.plugs.Request = function(options) {
+        return new _FakeRequest(options);
+    };
+
+    return mp;
+}
+
+
 exports.test_post_zero_file = function(test) {
     var received = [];
     var completed = 0;
