@@ -1,64 +1,159 @@
 // Suppress console.log spewage in addon code
 const env = require("env");
-env.log = function () {
+//env.log = function () {
+//};
+
+
+const remoteUtils = require("remote-utils");
+const localUtils = require("local-utils");
+const syncManager = require("sync-manager");
+
+
+var FakeState = function(timestamp) {
+    this.fileNames = [];
+    this.files = {};
+    this.timestamp = timestamp;
+};
+FakeState.prototype.stepTime = function() {
+    this.timestamp += 1;
 };
 
-const file = require("file");
-const sm = require("sync-manager");
+var FakeLocalRoot = function(options) {
+    this.options = options;
+};
 
-// Override global
-var base_dir = '/tmp/karlboxtest';
-var _save_base_dir = '';
+FakeLocalRoot.prototype._setState = function(state) {
+    this.state = state;
+};
 
-function SetupTestDir() {
-    
-    _save_base_dir = env._save_base_dir;
-    env.base_dir = base_dir;
+FakeLocalRoot.prototype.existsRoot = function() {
+    // Checks if the root exists
+    return true;
+};
 
-    // First remove the test dir if it exists
-    if (file.exists(base_dir)) {
-        file.list(base_dir).forEach(function(filename) {
-            file.remove(file.join(base_dir, filename));
-        });
-        file.rmdir(base_dir);
+FakeLocalRoot.prototype.checkRoot = function(hash) {
+    // Checks if the root exists, and marked with the correct hash
+    return true;
+};
+
+FakeLocalRoot.prototype.createRoot = function(hash) {
+    // Creates the root, and marks it with the correct hash
+};
+
+FakeLocalRoot.prototype.listFiles = function() {
+    // ignore any file that starts with a dot
+    return this.state.fileNames;
+};
+
+FakeLocalRoot.prototype.exists = function(fileName) {
+    return this.state.files[fileName] !== undefined;
+};
+
+FakeLocalRoot.prototype.readFile = function(fileName) {
+    return this.state.files[fileName].content;
+};
+
+FakeLocalRoot.prototype.writeFile = function(fileName, txt) {
+    if (this.lastModification[fileName] !== undefined) {
+        this.state.fileNames.push(fileName);
     }
+    this.state.stepTime();
+    this.state.files[fileName] = {
+        content: txt,
+        lastModification: this.timestamp
+    };
+};
 
-    // Now make the testing directory, with some stuff in it
-    file.mkpath(base_dir);
-    var sample_filenames = ['aaa.txt', 'bbb.txt', 'ccc.txt', 'ddd.txt'];
-    sample_filenames.forEach(function(filename) {
-        touch_file(filename);
+FakeLocalRoot.prototype.mimeType = function(fileName) {
+    var mimeType = "text/plain";
+    return mimeType
+};
+
+FakeLocalRoot.prototype.lastModified = function(fileName) {
+    return this.state.files[fileName].lastModification;
+};
+
+FakeLocalRoot.prototype.btoa = function(txt) {
+    return txt;
+};
+
+   // fake some functions for easy testability
+function FakeQueryRequest(options) {
+    this.options = options;
+}
+FakeQueryRequest.prototype._setState = function(state, posted) {
+    this.state = state;
+    this.posted = posted;
+};
+FakeQueryRequest.prototype.post = function() {
+    var self = this;
+    this.posted.push({
+        url: this.options.url,
+        timestampfrom: this.options.content.timestampfrom
+    });
+    var changed_files = [];
+    this.state.fileNames.forEach(function(fileName) {
+        var last_mod = '' + self.state.files[filename].lastModification;
+        if (last_mod > this.options.content.timestampfrom) {
+            changed_files.push({
+                fileName: fileName,
+                currentRemote: last_mod
+            });
+        }
+    });
+    this.state.stepTime();
+    var response = {
+        json: {
+            result: 'OK',
+            changed: changed_files,
+            timestamp_from: this.options.content.timestampfrom,
+            timestamp_to: this.state.timestamp
+        }
+    };
+    this.options.onComplete(response);
+};
+
+
+function SyncList(options) {
+    var sl = syncManager.SyncList(options);
+
+    sl.test_client_state = new FakeState(600);
+    sl.test_server_state = new FakeState(100);
+
+    sl.plugs.LocalRoot = function(options) {
+        lr = new FakeLocalRoot(options);
+        lr._setState(sl.test_client_state);
+        return lr;
+    };
+
+    sl.test_posted_query = [];
+
+    sl.plugs.Request = function(options) {
+        r = new FakeQueryRequest(options);
+        r._setState(sl.test_server_state, sl.test_posted_query);
+        return r;
+    };
+
+    return sl;
+};
+
+
+exports.test_empty = function(test) {
+    var completed = 0;
+    var sync_data = {};
+    var sl = SyncList({
+        onComplete: function() {
+            completed += 1;
+        }
     });
 
-}
+    sl.sync();
 
+    test.assertEqual(completed, 1);
+    test.assertEqual(sl.test_posted_query.length, 1);
 
-// like setTimeout
-function timeout(delay, func) {
-    var timer = env.cc['@mozilla.org/timer;1']
-            .createInstance(env.ci.nsITimer);
-    timer.initWithCallback(func, delay,
-            env.ci.nsITimer.TYPE_ONE_SHOT);
-    return timer;
-}
-
-
-function touch_file(fn) {
-    var full_fn = file.join(base_dir, fn);
-    var f = file.open(full_fn, 'w');
-    f.write('A file');
-    f.close();
-}
-
-function get_file(fn) {
-    var f = new sm.SyncFile(base_dir, fn);
-    return f;
-}
-
-//  ###########################
-
-exports.test_test_run = function(test) {
-    test.pass('Unit test running!');
+    test.assertEqual(sl.test_server_state.fileNames.length, 0);
+    test.assertEqual(sl.test_client_state.fileNames.length, 0);
 };
 
 /*
