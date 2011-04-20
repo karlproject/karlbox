@@ -9,14 +9,25 @@ const localUtils = require("local-utils");
 const syncManager = require("sync-manager");
 
 
+// fake some functions for easy testability
+
 var FakeState = function(timestamp) {
-    this.fileNames = [];
     this.files = {};
     this.timestamp = timestamp;
 };
 FakeState.prototype.stepTime = function() {
     this.timestamp += 1;
 };
+FakeState.prototype.fileNames = function() {
+    var fileNames = [];
+    for (var fileName in this.files) {
+        if (this.files.hasOwnProperty(fileName)) {
+            fileNames.push(fileName);
+        }
+    }
+    return fileNames;
+};
+
 
 var FakeLocalRoot = function(options) {
     this.options = options;
@@ -41,8 +52,7 @@ FakeLocalRoot.prototype.createRoot = function(hash) {
 };
 
 FakeLocalRoot.prototype.listFiles = function() {
-    // ignore any file that starts with a dot
-    return this.state.fileNames;
+    return this.state.fileNames();
 };
 
 FakeLocalRoot.prototype.exists = function(fileName) {
@@ -54,9 +64,6 @@ FakeLocalRoot.prototype.readFile = function(fileName) {
 };
 
 FakeLocalRoot.prototype.writeFile = function(fileName, txt) {
-    if (this.lastModification[fileName] !== undefined) {
-        this.state.fileNames.push(fileName);
-    }
     this.state.stepTime();
     this.state.files[fileName] = {
         content: txt,
@@ -77,12 +84,13 @@ FakeLocalRoot.prototype.btoa = function(txt) {
     return txt;
 };
 
-   // fake some functions for easy testability
+
+
 function FakeQueryRequest(options) {
     this.options = options;
 }
-FakeQueryRequest.prototype._setState = function(state, posted) {
-    this.state = state;
+FakeQueryRequest.prototype._setState = function(server_state, posted) {
+    this.server_state = server_state;
     this.posted = posted;
 };
 FakeQueryRequest.prototype.post = function() {
@@ -92,26 +100,97 @@ FakeQueryRequest.prototype.post = function() {
         timestampfrom: this.options.content.timestampfrom
     });
     var changed_files = [];
-    this.state.fileNames.forEach(function(fileName) {
-        var last_mod = '' + self.state.files[filename].lastModification;
-        if (last_mod > this.options.content.timestampfrom) {
+    this.server_state.fileNames().forEach(function(fileName) {
+        var last_mod = '' + self.server_state.files[fileName].lastModification;
+        if (last_mod > self.options.content.timestampfrom) {
             changed_files.push({
                 fileName: fileName,
                 currentRemote: last_mod
             });
         }
     });
-    this.state.stepTime();
+    this.server_state.stepTime();
     var response = {
         json: {
             result: 'OK',
             changed: changed_files,
             timestamp_from: this.options.content.timestampfrom,
-            timestamp_to: this.state.timestamp
+            timestamp_to: this.server_state.timestamp
         }
     };
     this.options.onComplete(response);
 };
+
+
+function FakeMultiPoster(options) {
+    this.options = options;
+}
+FakeMultiPoster.prototype._setState = function(server_state, client_state) {
+    this.server_state = server_state;
+    this.client_state = client_state;
+};
+FakeMultiPoster.prototype.post = function() {
+    var self = this;
+    this.options.fileNames.forEach(function(fileName) {
+        var response;
+        var status;
+        self.server_state.stepTime();
+        if (self.server_state.files[fileName] !== undefined) { 
+            status = "modified";
+        } else {
+            status = "added";
+        }
+        response = {
+                json: {
+                    status: status,
+                    result: "OK",
+                    filename: fileName,
+                    lastremote: self.server_state.timestamp
+                }
+            };
+        self.server_state.files[fileName].content = self.client_state.files[fileName].content;
+        self.server_state.files[fileName].lastModification = self.server_state.timestamp;
+        //
+        if (self.options.onEachResult) {
+            self.options.onEachResult(fileName, response);
+        }
+    });
+    if (this.options.onComplete) {
+        this.options.onComplete();
+    }
+
+};
+
+function FakeMultiGetter(options) {
+    this.options = options;
+}
+FakeMultiGetter.prototype._setState = function(server_state) {
+    this.server_state = server_state;
+};
+FakeMultiGetter.prototype.get = function() {
+    var self = this;
+    this.options.fileNames.forEach(function(fileName) {
+        var response;
+        if (self.server_state.files[fileName] !== undefined) { 
+            response = {
+                status: '200',
+                text: self.server_state.files[fileName].content
+            };
+        } else {
+            response = {
+                status: '404'
+            };
+        }
+        if (self.options.onEachResult) {
+            self.options.onEachResult(fileName, response);
+        }
+    });
+    if (this.options.onComplete) {
+        this.options.onComplete();
+    }
+
+};
+
 
 
 function SyncList(options) {
@@ -119,6 +198,7 @@ function SyncList(options) {
 
     sl.test_client_state = new FakeState(600);
     sl.test_server_state = new FakeState(100);
+    sl.test_posted_query = [];
 
     sl.plugs.LocalRoot = function(options) {
         lr = new FakeLocalRoot(options);
@@ -126,13 +206,25 @@ function SyncList(options) {
         return lr;
     };
 
-    sl.test_posted_query = [];
 
     sl.plugs.Request = function(options) {
         r = new FakeQueryRequest(options);
         r._setState(sl.test_server_state, sl.test_posted_query);
         return r;
     };
+
+    sl.plugs.MultiGetter = function(options) {
+        r = new FakeMultiGetter(options);
+        r._setState(sl.test_server_state);
+        return r;
+    };
+
+    sl.plugs.MultiPoster = function(options) {
+        r = new FakeMultiPoster(options);
+        r._setState(sl.test_server_state);
+        return r;
+    };
+
 
     return sl;
 };
@@ -152,9 +244,54 @@ exports.test_empty = function(test) {
     test.assertEqual(completed, 1);
     test.assertEqual(sl.test_posted_query.length, 1);
 
-    test.assertEqual(sl.test_server_state.fileNames.length, 0);
-    test.assertEqual(sl.test_client_state.fileNames.length, 0);
+    test.assertEqual(sl.test_server_state.fileNames().length, 0);
+    test.assertEqual(sl.test_client_state.fileNames().length, 0);
+
+    sl.sync();
+
+    test.assertEqual(completed, 2);
+    test.assertEqual(sl.test_posted_query.length, 2);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 0);
+    test.assertEqual(sl.test_client_state.fileNames().length, 0);
 };
+
+exports.test_first_sync = function(test) {
+    var completed = 0;
+    var sync_data = {};
+    var sl = SyncList({
+        onComplete: function() {
+            completed += 1;
+        }
+    });
+
+    // some files on the server
+    sl.test_server_state.files = {
+        'aaa.txt': {content: 'Content', lastModification: 100},  
+        'bbb.txt': {content: 'Content', lastModification: 100},  
+        'ccc.txt': {content: 'Content', lastModification: 100},  
+        'ddd.txt': {content: 'Content', lastModification: 100},  
+    };
+    sl.test_server_state.timestamp = 101;
+
+    sl.sync();
+
+    test.assertEqual(completed, 1);
+    test.assertEqual(sl.test_posted_query.length, 1);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+    sl.sync();
+
+    test.assertEqual(completed, 2);
+    test.assertEqual(sl.test_posted_query.length, 2);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+};
+
 
 /*
  
