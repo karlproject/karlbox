@@ -1,15 +1,14 @@
 // Suppress console.log spewage in addon code
 const env = require("env");
-//env.log = function () {
-//};
+env.log = function () {
+};
 
-
-const remoteUtils = require("remote-utils");
-const localUtils = require("local-utils");
 const syncManager = require("sync-manager");
 
 
+// --
 // fake some functions for easy testability
+// --
 
 var FakeState = function(timestamp) {
     this.files = {};
@@ -85,7 +84,6 @@ FakeLocalRoot.prototype.btoa = function(txt) {
 };
 
 
-
 function FakeQueryRequest(options) {
     this.options = options;
 }
@@ -139,6 +137,7 @@ FakeMultiPoster.prototype.post = function() {
             status = "modified";
         } else {
             status = "added";
+            self.server_state.files[fileName] = {};
         }
         response = {
                 json: {
@@ -160,6 +159,7 @@ FakeMultiPoster.prototype.post = function() {
     }
 
 };
+
 
 function FakeMultiGetter(options) {
     this.options = options;
@@ -221,7 +221,7 @@ function SyncList(options) {
 
     sl.plugs.MultiPoster = function(options) {
         r = new FakeMultiPoster(options);
-        r._setState(sl.test_server_state);
+        r._setState(sl.test_server_state, sl.test_client_state);
         return r;
     };
 
@@ -229,6 +229,24 @@ function SyncList(options) {
     return sl;
 };
 
+
+
+// --
+// Tests
+// --
+
+function check_statuses(test, sl, o) {
+    test.assertEqual(sl.pullResults.added.length, o.pull_added);
+    test.assertEqual(sl.pullResults.modified.length, o.pull_modified);
+    test.assertEqual(sl.pullResults.deleted.length, o.pull_deleted);
+    test.assertEqual(sl.pullResults.errors.length, o.pull_errors);
+    test.assertEqual(sl.pullResults.conflicts.length, o.pull_conflicts);
+    test.assertEqual(sl.pushResults.added.length, o.push_added);
+    test.assertEqual(sl.pushResults.modified.length, o.push_modified);
+    test.assertEqual(sl.pushResults.deleted.length, o.push_deleted);
+    test.assertEqual(sl.pushResults.errors.length, o.push_errors);
+    test.assertEqual(sl.pushResults.conflicts.length, o.push_conflicts);
+}
 
 exports.test_empty = function(test) {
     var completed = 0;
@@ -247,6 +265,20 @@ exports.test_empty = function(test) {
     test.assertEqual(sl.test_server_state.fileNames().length, 0);
     test.assertEqual(sl.test_client_state.fileNames().length, 0);
 
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
     sl.sync();
 
     test.assertEqual(completed, 2);
@@ -254,9 +286,24 @@ exports.test_empty = function(test) {
 
     test.assertEqual(sl.test_server_state.fileNames().length, 0);
     test.assertEqual(sl.test_client_state.fileNames().length, 0);
+
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
 };
 
-exports.test_first_sync = function(test) {
+exports.test_first_download = function(test) {
     var completed = 0;
     var sync_data = {};
     var sl = SyncList({
@@ -272,7 +319,6 @@ exports.test_first_sync = function(test) {
         'ccc.txt': {content: 'Content', lastModification: 100},  
         'ddd.txt': {content: 'Content', lastModification: 100},  
     };
-    sl.test_server_state.timestamp = 101;
 
     sl.sync();
 
@@ -282,6 +328,21 @@ exports.test_first_sync = function(test) {
     test.assertEqual(sl.test_server_state.fileNames().length, 4);
     test.assertEqual(sl.test_client_state.fileNames().length, 4);
 
+    check_statuses(test, sl, {
+        pull_added: 4,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+
     sl.sync();
 
     test.assertEqual(completed, 2);
@@ -290,265 +351,559 @@ exports.test_first_sync = function(test) {
     test.assertEqual(sl.test_server_state.fileNames().length, 4);
     test.assertEqual(sl.test_client_state.fileNames().length, 4);
 
-};
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
 
-
-/*
- 
-exports.test_sync_file_exists = function(test) {
-    test.assert(sm.SyncFile);
-};
-
-exports.test_sync_file_basics = function(test) {
-    SetupTestDir();
-    var f = get_file("aaa.txt");
-    test.assertEqual(f.fullpath, file.join(base_dir, "aaa.txt"));
-    test.assert(f.last_modified > 1301604212000);
-    test.assertEqual(f.readEncoded(), "QSBmaWxl");
-};
-
-exports.test_sync_list_exists = function(test) {
-    test.assert(sm.SyncList);
-};
-
-exports.test_sync_list_stored = function(test) {
-    var sl = new sm.SyncList({"aaa.txt": 999});
-    test.assert("aaa.txt" in sl.sync_map);
-    ;
-};
-
-exports.test_sync_list_initial_queue = function(test) {
-    var sl = new sm.SyncList({});
-    test.assert(sl.sync_map = {});
-};
-
-exports.test_sync_list_initial_add = function(test) {
-    // Make an empty sync list, push file that has never been seen.
-
-    // Bootstrap
-    SetupTestDir();
-    var sl = new sm.SyncList({});
-
-    var full_fn = file.join(base_dir, "aaa.txt");
-    var f = new sm.SyncFile(full_fn);
-    sl.push(f);
-
-    var r = sl.sync_map[full_fn];
-    test.assert(r);
-    test.assertEqual(r.status, "added");
-    test.assertEqual(r.last_local, f.last_modified);
-    test.assertEqual(r.last_remote, null);
-}
-
-exports.test_sync_list_already_added = function(test) {
-    // Make an empty sync list, push file was just added but not
-    // yet syncd.
-
-    // Bootstrap
-    SetupTestDir();
-    var full_fn = file.join(base_dir, "aaa.txt");
-    var sl = new sm.SyncList({});
-
-    var f1 = get_file("aaa.txt");
-    sl.push(f1);
-    delete(f1);
-
-    // Now change that file
-    touch_file("aaa.txt");
-    var f2 = get_file("aaa.txt");
-
-    var r = sl.sync_map[full_fn];
-    test.assert(r);
-    test.assertEqual(r.status, "added");
-    test.assertEqual(r.last_local, f2.last_modified);
-    test.assertEqual(r.last_remote, null);
-}
-
-exports.test_sync_list_syncd_first_modified = function(test) {
-    // File was added and syncd.  Then modified, first run through.
-
-    // Bootstrap
-    SetupTestDir();
-    var full_fn = file.join(base_dir, "aaa.txt");
-    var f1 = get_file("aaa.txt");
-    var sl = new sm.SyncList(
-            {full_fn: {
-                status: "syncd",
-                last_local: f1.last_modified,
-                last_remote: f1.last_modified
-            }
-            });
-
-    // Now change the file, push it on. We need to wait a second to
-    // so the last modification time is rev'd.
-    timeout(1000, function () {
-        touch_file("aaa.txt");
-        var f2 = get_file("aaa.txt");
-        sl.push(f2);
-
-        var r = sl.sync_map[full_fn];
-        test.assert(r);
-        test.assertEqual(r.status, "modified");
-        test.assertEqual(r.last_local, f2.last_modified);
-        test.assertEqual(r.last_remote, f1.last_modified);
-        test.done();
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
     });
 
-    test.waitUntilDone(5000);
-}
+};
 
-exports.test_sync_list_syncd_second_modified = function(test) {
-    // File was added and syncd.  Then modified, first run
-    // through.  Now it is the second run through.
-
-    // Bootstrap
-    SetupTestDir();
-    var full_fn = file.join(base_dir, "aaa.txt");
-    var f1 = get_file("aaa.txt");
-    var sl = new sm.SyncList(
-            {full_fn: {
-                status: "syncd",
-                last_local: f1.last_modified,
-                last_remote: f1.last_modified
-            }
-            });
-
-    // Now change the file, push it on. We need to wait a second to
-    // so the last modification time is rev'd.
-    timeout(1000, function () {
-
-        // First run through
-        touch_file("aaa.txt");
-        var f2 = get_file("aaa.txt");
-        sl.push(f2);
-        
-        // wait another, to modify again
-        timeout(1000, function () {
-            // Second run through
-            touch_file("aaa.txt");
-            var f3 = get_file("aaa.txt");
-            sl.push(f3);
-
-            var r = sl.sync_map[full_fn];
-            test.assert(r);
-            test.assertEqual(r.status, "modified");
-            test.assertEqual(r.last_local, f3.last_modified);
-            test.assertEqual(r.last_remote, f1.last_modified);
-            
-            test.done()
-        });
-
+exports.test_first_upload = function(test) {
+    var completed = 0;
+    var sync_data = {};
+    var sl = SyncList({
+        onComplete: function() {
+            completed += 1;
+        }
     });
 
-    test.waitUntilDone(5000);
-}
-
-exports.test_sync_list_deleted = function(test) {
-
-    // Make up some dummy state
-    var deleted_fn = file.join(base_dir, "XXX.txt");
-    var dummy = get_file("aaa.txt");
-    var sync_map = new Array();
-    sync_map[deleted_fn] = {
-        status: "syncd",
-        last_local: dummy.last_modified,
-        last_remote: dummy.last_modified
+    // some files on the client
+    sl.test_client_state.files = {
+        'aaa.txt': {content: 'Content', lastModification: 600},  
+        'bbb.txt': {content: 'Content', lastModification: 600},  
+        'ccc.txt': {content: 'Content', lastModification: 600},  
+        'ddd.txt': {content: 'Content', lastModification: 600},  
     };
-
-    var sl = new sm.SyncList(sync_map);
-    sl.mark_deleted();
-    test.assertEqual(sl.sync_map[deleted_fn].status, "deleted");
-    sl.mark_deleted();
-
-};
-
-exports.test_sync_list_bogus_push_status = function(test) {
-    // If something gets onto the sync_map with a bogus
-    // status, and we push something on with the same key, we should
-    // fail gracefully.
-
-    var f = get_file("aaa.txt")
-    var data = new Array();
-    data[f.fullpath] = {
-        status: "bogus",
-        last_local: null,
-        last_remote: null
-    };
-    var sl = new sm.SyncList(data);
-
-    function pusher() {
-        sl.push(f);
-    }
-
-    test.assertRaises(pusher, "Bogus sync status of: bogus")
-};
-
-exports.test_sync_list_get_uploads = function(test) {
-    // Make a sync_map, get back objects needing upload
-
-    // Bootstrap
-    SetupTestDir();
-    var sl = new sm.SyncList({});
-
-    var f1 = get_file("aaa.txt");
-    sl.push(f1);
-    var f2 = get_file("bbb.txt");
-    sl.push(f2);
-    var f3 = get_file("ccc.txt");
-    sl.push(f3);
-    var f4 = get_file("ddd.txt");
-    sl.push(f4);
-
-    sl.sync_map[f1.fullpath].status = "modified";
-    sl.sync_map[f1.fullpath].status = "deleted";
-    sl.sync_map[f1.fullpath].status = "syncd";
-
-    var matching = sl.get_uploads();
-    test.assertEqual(matching.length, 3);
-};
-
-exports.test_sync_list_prepare_sync = function(test) {
-    SetupTestDir();
-    var sl = new sm.SyncList({});
-    var f1 = sl.push(get_file("aaa.txt"));
-    var f2 = sl.push(get_file("bbb.txt"));
-    var f3 = sl.push(get_file("ccc.txt"));
-
-    var payload = sl.prepare_sync();
-    test.assert(payload['filename-0']);
-    test.assert(payload['binfile-0']);
-};
-
-exports.test_sync_list_sync = function(test) {
-    SetupTestDir();
-    var sl = new sm.SyncList({});
-    var f1 = sl.push(get_file("aaa.txt"));
-    var f2 = sl.push(get_file("bbb.txt"));
-    var f3 = sl.push(get_file("ccc.txt"));
 
     sl.sync();
-    test.pass("ok");
+
+    test.assertEqual(completed, 1);
+    test.assertEqual(sl.test_posted_query.length, 1);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 4,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+    sl.sync();
+
+    test.assertEqual(completed, 2);
+    test.assertEqual(sl.test_posted_query.length, 2);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
 };
-*/
+
+exports.test_client_adding = function(test) {
+    var completed = 0;
+    var sync_data = {};
+    var sl = SyncList({
+        onComplete: function() {
+            completed += 1;
+        }
+    });
+
+    // some files on the server
+    sl.test_server_state.files = {
+        'aaa.txt': {content: 'Content', lastModification: 100},  
+        'bbb.txt': {content: 'Content', lastModification: 100},  
+        'ccc.txt': {content: 'Content', lastModification: 100},  
+        'ddd.txt': {content: 'Content', lastModification: 100},  
+    };
+
+    sl.sync();
+
+    test.assertEqual(completed, 1);
+    test.assertEqual(sl.test_posted_query.length, 1);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+    check_statuses(test, sl, {
+        pull_added: 4,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
 
 
-/*
-exports.test_sync_list_sync_old = function(test) {
-    // Make a sync_map, get back objects needing upload
+    // some files on the client
+    sl.test_client_state.stepTime()
+    sl.test_client_state.files['eee.txt'] = {
+        content: 'Content', lastModification: sl.test_client_state.timestamp
+    };
 
-    // Bootstrap
-    SetupTestDir();
-    var sl = new sm.SyncList({});
+    sl.sync();
 
-    var f1 = sl.push(get_file("aaa.txt"));
-    var f2 = sl.push(get_file("bbb.txt"));
-    var f3 = sl.push(get_file("ccc.txt"));
+    test.assertEqual(completed, 2);
+    test.assertEqual(sl.test_posted_query.length, 2);
 
-    //sl.sync();
-    // XXX Need a better test, with a pluggable request
-    test.pass("ok");
+    test.assertEqual(sl.test_server_state.fileNames().length, 5);
+    test.assertEqual(sl.test_client_state.fileNames().length, 5);
+
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 1,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+
+    sl.sync();
+
+    test.assertEqual(completed, 3);
+    test.assertEqual(sl.test_posted_query.length, 3);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 5);
+    test.assertEqual(sl.test_client_state.fileNames().length, 5);
+
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
 };
-*/
+
+exports.test_client_modifying = function(test) {
+    var completed = 0;
+    var sync_data = {};
+    var sl = SyncList({
+        onComplete: function() {
+            completed += 1;
+        }
+    });
+
+    // some files on the server
+    sl.test_server_state.files = {
+        'aaa.txt': {content: 'Content', lastModification: 100},  
+        'bbb.txt': {content: 'Content', lastModification: 100},  
+        'ccc.txt': {content: 'Content', lastModification: 100},  
+        'ddd.txt': {content: 'Content', lastModification: 100},  
+    };
+
+    sl.sync();
+
+    test.assertEqual(completed, 1);
+    test.assertEqual(sl.test_posted_query.length, 1);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+    check_statuses(test, sl, {
+        pull_added: 4,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
 
 
+    // some files on the client
+    sl.test_client_state.stepTime()
+    sl.test_client_state.files['ccc.txt'] = {
+        content: 'New content', lastModification: sl.test_client_state.timestamp
+    };
+
+    sl.sync();
+
+    test.assertEqual(completed, 2);
+    test.assertEqual(sl.test_posted_query.length, 2);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 1,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+
+    sl.sync();
+
+    test.assertEqual(completed, 3);
+    test.assertEqual(sl.test_posted_query.length, 3);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+};
+
+exports.test_server_adding = function(test) {
+    var completed = 0;
+    var sync_data = {};
+    var sl = SyncList({
+        onComplete: function() {
+            completed += 1;
+        }
+    });
+
+    // some files on the server
+    sl.test_server_state.files = {
+        'aaa.txt': {content: 'Content', lastModification: 100},  
+        'bbb.txt': {content: 'Content', lastModification: 100},  
+        'ccc.txt': {content: 'Content', lastModification: 100},  
+        'ddd.txt': {content: 'Content', lastModification: 100},  
+    };
+
+    sl.sync();
+
+    test.assertEqual(completed, 1);
+    test.assertEqual(sl.test_posted_query.length, 1);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+    check_statuses(test, sl, {
+        pull_added: 4,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+
+    // some files on the server
+    sl.test_server_state.stepTime()
+    sl.test_server_state.files['eee.txt'] = {
+        content: 'Content', lastModification: sl.test_server_state.timestamp
+    };
+
+    sl.sync();
+
+    test.assertEqual(completed, 2);
+    test.assertEqual(sl.test_posted_query.length, 2);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 5);
+    test.assertEqual(sl.test_client_state.fileNames().length, 5);
+
+    check_statuses(test, sl, {
+        pull_added: 1,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+
+    sl.sync();
+
+    test.assertEqual(completed, 3);
+    test.assertEqual(sl.test_posted_query.length, 3);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 5);
+    test.assertEqual(sl.test_client_state.fileNames().length, 5);
+
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+};
+
+exports.test_server_modifying = function(test) {
+    var completed = 0;
+    var sync_data = {};
+    var sl = SyncList({
+        onComplete: function() {
+            completed += 1;
+        }
+    });
+
+    // some files on the server
+    sl.test_server_state.files = {
+        'aaa.txt': {content: 'Content', lastModification: 100},  
+        'bbb.txt': {content: 'Content', lastModification: 100},  
+        'ccc.txt': {content: 'Content', lastModification: 100},  
+        'ddd.txt': {content: 'Content', lastModification: 100},  
+    };
+
+    sl.sync();
+
+    test.assertEqual(completed, 1);
+    test.assertEqual(sl.test_posted_query.length, 1);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+    check_statuses(test, sl, {
+        pull_added: 4,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+
+    // some files on the server
+    sl.test_server_state.stepTime()
+    sl.test_server_state.files['ccc.txt'] = {
+        content: 'New content', lastModification: sl.test_server_state.timestamp
+    };
+
+    sl.sync();
+
+    test.assertEqual(completed, 2);
+    test.assertEqual(sl.test_posted_query.length, 2);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 1,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+
+    sl.sync();
+
+    test.assertEqual(completed, 3);
+    test.assertEqual(sl.test_posted_query.length, 3);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+};
+
+exports.test_add_delete_combo1 = function(test) {
+    var completed = 0;
+    var sync_data = {};
+    var sl = SyncList({
+        onComplete: function() {
+            completed += 1;
+        }
+    });
+
+    // some files on the server
+    sl.test_server_state.files = {
+        'aaa.txt': {content: 'Content', lastModification: 100},  
+        'bbb.txt': {content: 'Content', lastModification: 100},  
+        'ccc.txt': {content: 'Content', lastModification: 100},  
+        'ddd.txt': {content: 'Content', lastModification: 100},  
+    };
+
+    sl.sync();
+
+    test.assertEqual(completed, 1);
+    test.assertEqual(sl.test_posted_query.length, 1);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+    check_statuses(test, sl, {
+        pull_added: 4,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+
+    // some files on the server
+    sl.test_server_state.stepTime()
+    sl.test_server_state.files['eee.txt'] = {
+        content: 'New content', lastModification: sl.test_server_state.timestamp
+    };
+    sl.test_server_state.files['ccc.txt'] = {
+        content: 'New content', lastModification: sl.test_server_state.timestamp
+    };
+    // some files on the client
+    sl.test_client_state.stepTime()
+    sl.test_client_state.files['fff.txt'] = {
+        content: 'New content', lastModification: sl.test_client_state.timestamp
+    };
+    sl.test_client_state.files['aaa.txt'] = {
+        content: 'New content', lastModification: sl.test_client_state.timestamp
+    };
+
+
+    sl.sync();
+
+    test.assertEqual(completed, 2);
+    test.assertEqual(sl.test_posted_query.length, 2);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 6);
+    test.assertEqual(sl.test_client_state.fileNames().length, 6);
+
+    check_statuses(test, sl, {
+        pull_added: 1,
+        pull_modified: 1,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 1,
+        push_modified: 1,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+
+    sl.sync();
+
+    test.assertEqual(completed, 3);
+    test.assertEqual(sl.test_posted_query.length, 3);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 6);
+    test.assertEqual(sl.test_client_state.fileNames().length, 6);
+
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+};
 
