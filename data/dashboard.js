@@ -1,8 +1,3 @@
-$('#kb-showsetup').click(function () {
-    $('#kb-setupform').toggle('slow');
-    postMessage({type: "fetch_setupdata"});
-});
-
 $('#kb-savesetup').click(function (evt) {
 
     var username = $('#kb-username').val();
@@ -15,7 +10,7 @@ $('#kb-savesetup').click(function (evt) {
         password: password,
         karlurl: karlurl,
         karlcommunity: karlcommunity,
-        localdir: localdir 
+        localdir: localdir
     };
     var message = {type: "store_setupdata", value: setup};
     postMessage(message);
@@ -35,7 +30,6 @@ onMessage = function onMessage(message) {
             return;
         }
         case 'finish_storesetup': {
-            $('#kb-setupform').hide('slow');
             return;
         }
     }
