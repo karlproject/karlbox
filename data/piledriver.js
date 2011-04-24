@@ -4,8 +4,7 @@ var grid;
 var columns = [
     {id:"sel", name:"#", field:"num", cssClass:"cell-selection", width:40, resizable:false, selectable:false, focusable:false },
     {id:"title", name:"Title", field:"title", width:120, minWidth:120, cssClass:"cell-title", sortable:true, editor:TextCellEditor},
-    {id:"duration", name:"Duration", field:"duration", sortable:true},
-    {id:"%", name:"% Complete", field:"percentComplete", width:80, formatter:GraphicalPercentCompleteCellFormatter, sortable:true, groupTotalsFormatter:avgTotalsFormatter}
+    {id:"duration", name:"Duration", field:"duration", sortable:true}
 ];
 
 var options = {
@@ -15,7 +14,6 @@ var options = {
 
 var sortcol = "title";
 var sortdir = 1;
-var percentCompleteThreshold = 0;
 var searchString = "";
 
 function avgTotalsFormatter(totals, columnDef) {
@@ -23,17 +21,10 @@ function avgTotalsFormatter(totals, columnDef) {
 }
 
 function myFilter(item) {
-    if (item["percentComplete"] < percentCompleteThreshold)
-        return false;
-
     if (searchString != "" && item["title"].indexOf(searchString) == -1)
         return false;
 
     return true;
-}
-
-function percentCompleteSort(a, b) {
-    return a["percentComplete"] - b["percentComplete"];
 }
 
 function comparer(a, b) {
@@ -58,7 +49,6 @@ function loadRandomData() {
         d["num"] = i;
         d["title"] = "Task " + i;
         d["duration"] = Math.round(Math.random() * 14);
-        d["percentComplete"] = Math.round(Math.random() * 100);
         d["effortDriven"] = (i % 5 == 0);
     }
     reloadGrid(data);
@@ -95,28 +85,7 @@ $(function() {
         sortdir = args.sortAsc ? 1 : -1;
         sortcol = args.sortCol.field;
 
-        if ($.browser.msie && $.browser.version <= 8) {
-            // using temporary Object.prototype.toString override
-            // more limited and does lexicographic sort only by default, but can be much faster
-
-            var percentCompleteValueFn = function() {
-                var val = this["percentComplete"];
-                if (val < 10)
-                    return "00" + val;
-                else if (val < 100)
-                    return "0" + val;
-                else
-                    return val;
-            };
-
-            // use numeric sort of % and lexicographic for everything else
-            dataView.fastSort((sortcol == "percentComplete") ? percentCompleteValueFn : sortcol, args.sortAsc);
-        }
-        else {
-            // using native sort with comparer
-            // preferred method but can be very slow in IE with huge datasets
             dataView.sort(comparer, args.sortAsc);
-        }
     });
 
     // wire up model events to drive the grid
@@ -158,9 +127,5 @@ $(function() {
                 return a.value - b.value;
             }
     );
-    dataView.setAggregators([
-        new Slick.Data.Aggregators.Avg("percentComplete")
-    ], false);
-
     loadSampleData();
 })

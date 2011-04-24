@@ -26,6 +26,20 @@
         "num": 3,
         "percentComplete": 36,
         "title": "Task 3"
+    },
+    {
+        "duration": 0,
+        "id": "id_4",
+        "num": 4,
+        "percentComplete": 36,
+        "title": "Simply Task 4"
+    },
+    {
+        "duration": 0,
+        "id": "id_5",
+        "num": 5,
+        "percentComplete": 36,
+        "title": "Another Task 5"
     }
 
 ]
