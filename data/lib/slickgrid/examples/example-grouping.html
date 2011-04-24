@@ -1,0 +1,84 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<title>SlickGrid example: Grouping</title>
+		<link rel="stylesheet" href="../slick.grid.css" type="text/css" media="screen" charset="utf-8" />
+		<link rel="stylesheet" href="../controls/slick.pager.css" type="text/css" media="screen" charset="utf-8" />
+        <link rel="stylesheet" href="../css/smoothness/jquery-ui-1.8.5.custom.css" type="text/css" media="screen" charset="utf-8" />
+		<link rel="stylesheet" href="examples.css" type="text/css" media="screen" charset="utf-8" />
+		<link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css" media="screen" charset="utf-8" />
+		<style>
+		.cell-title {
+			font-weight: bold;
+		}
+
+		.cell-effort-driven {
+			text-align: center;
+		}
+	</style>
+	</head>
+	<body>
+        <div style="position:relative">
+            <div style="width:600px;">
+                <div class="grid-header" style="width:100%">
+                    <label>SlickGrid</label>
+                </div>
+                <div id="myGrid" style="width:100%;height:500px;"></div>
+                <div id="pager" style="width:100%;height:20px;"></div>
+            </div>
+
+            <div class="options-panel">
+                <b>Options:</b>
+                <hr/>
+                <div style="padding:6px;">
+                    <label style="width:200px;float:left">Show tasks with % at least: </label>
+                    <div style="padding:2px;">
+                        <div style="width:100px;display:inline-block;" id="pcSlider"></div>
+                    </div>
+                    <br/>
+                    <label style="width:200px;float:left">And title including:</label>
+                    <input type=text id="txtSearch" style="width:100px;">
+                    <br/><br/>
+                    <hr/>
+                    <button onclick="clearGrouping()">Clear grouping</button><br/>
+                    <button onclick="groupByDuration()">Group by duration & sort groups by value</button><br/>
+                    <button onclick="groupByDurationOrderByCount()">Group by duration & sort groups by count</button><br/>
+                    <button onclick="groupByDurationOrderByCountGroupCollapsed()">Group by duration & sort groups by count, group collapsed</button><br/>
+                    <br/>
+                    <button onclick="collapseAllGroups()">Collapse all groups</button><br/>
+                    <button onclick="expandAllGroups()">Expand all groups</button><br/>
+                </div>
+            </div>
+        </div>
+
+		<div style="margin-left:650px;margin-top:40px;;">
+			<h2>Demonstrates:</h2>
+
+			<ul>
+                <li>
+                    Fully dynamic and interactive grouping with filtering and aggregates over 10'000 items<br>
+                    Personally, this is just the coolest slickest thing I've ever seen done with DHTML grids!
+                </li>
+			</ul>
+		</div>
+
+		<script src="../../js/jquery-1.5.1.min.js"></script>
+		<script src="../../js/jquery-ui-1.8.11.custom.min.js"></script>
+		<script src="../lib/jquery.event.drag-2.0.min.js"></script>
+
+		<script src="../slick.core.js"></script>
+		<script src="../slick.editors.js"></script>
+        <script src="../plugins/slick.cellrangedecorator.js"></script>
+        <script src="../plugins/slick.cellrangeselector.js"></script>
+        <script src="../plugins/slick.cellselectionmodel.js"></script>
+		<script src="../slick.grid.js"></script>
+		<script src="../slick.groupitemmetadataprovider.js"></script>
+		<script src="../slick.dataview.js"></script>
+		<script src="../controls/slick.pager.js"></script>
+		<script src="../controls/slick.columnpicker.js"></script>
+
+		<script type="text/javascript" src="example-grouping.js"></script>
+
+	</body>
+</html>
