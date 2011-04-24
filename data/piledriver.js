@@ -1,12 +1,12 @@
 var dataView;
 var grid;
 var timeslots;
-
+var items;
 
 var columns = [
     {id:"sel", name:"#", field:"num", cssClass:"cell-selection", width:40, resizable:false, selectable:false, focusable:false },
     {id:"title", name:"Title", field:"title", width:400, minWidth:200, cssClass:"cell-title", sortable:true, editor:TextCellEditor},
-    {id:"who", name:"Who", field:"who", sortable:true, width: 150, minWidth: 100}
+    {id:"who", name:"Who", field:"who", sortable:true, width: 140, minWidth: 100}
 ];
 
 var options = {
@@ -31,6 +31,7 @@ function comparer(a, b) {
 }
 
 function reloadGrid(data) {
+    items = data;
     dataView.beginUpdate();
     dataView.setItems(data);
     dataView.endUpdate();
@@ -85,7 +86,7 @@ $(function() {
         sortdir = args.sortAsc ? 1 : -1;
         sortcol = args.sortCol.field;
 
-            dataView.sort(comparer, args.sortAsc);
+        dataView.sort(comparer, args.sortAsc);
     });
 
     // wire up model events to drive the grid
@@ -128,4 +129,20 @@ $(function() {
             }
     );
     loadSampleData();
+
+    $('#add-new-item').submit(function (evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        var rand_id = Math.round(Math.random() * 999);
+        var item = {
+            id: "id_" + rand_id,
+            num: rand_id,
+            title: $('#ani-title').val(),
+            who:  $('#ani-who').val(),
+            timeslot: $('#ani-timeslot').val()
+        };
+        items.push(item);
+        reloadGrid(items);
+        return false;
+    });
 });
