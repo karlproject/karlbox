@@ -7,7 +7,7 @@ var columns = [
     {id:"duration", name:"Duration", field:"duration", sortable:true},
     {id:"%", name:"% Complete", field:"percentComplete", width:80, formatter:GraphicalPercentCompleteCellFormatter, sortable:true, groupTotalsFormatter:avgTotalsFormatter},
     {id:"start", name:"Start", field:"start", minWidth:60, sortable:true},
-    {id:"finish", name:"Finish", field:"finish", minWidth:60, sortable:true},
+    {id:"finish", name:"Finish", field:"finish", minWidth:60, sortable:true}
 ];
 
 var options = {
@@ -120,20 +120,6 @@ $(".grid-header .ui-icon")
 function reloadGrid(data) {
     dataView.beginUpdate();
     dataView.setItems(data);
-    dataView.setFilter(myFilter);
-    dataView.groupBy(
-            "duration",
-            function (g) {
-                return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
-            },
-            function (a, b) {
-                return a.value - b.value;
-            }
-    );
-    dataView.setAggregators([
-        new Slick.Data.Aggregators.Avg("percentComplete")
-    ], false);
-    dataView.collapseGroup(0);
     dataView.endUpdate();
 }
 
@@ -260,6 +246,19 @@ $(function() {
 
     // initialize the model after all the events have been hooked up
     $("#gridContainer").resizable();
+    dataView.setFilter(myFilter);
+    dataView.groupBy(
+            "duration",
+            function (g) {
+                return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
+            },
+            function (a, b) {
+                return a.value - b.value;
+            }
+    );
+    dataView.setAggregators([
+        new Slick.Data.Aggregators.Avg("percentComplete")
+    ], false);
 
     loadSampleData();
 })
