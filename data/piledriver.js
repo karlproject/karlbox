@@ -4,7 +4,7 @@ var grid;
 var columns = [
     {id:"sel", name:"#", field:"num", cssClass:"cell-selection", width:40, resizable:false, selectable:false, focusable:false },
     {id:"title", name:"Title", field:"title", width:120, minWidth:120, cssClass:"cell-title", sortable:true, editor:TextCellEditor},
-    {id:"duration", name:"Duration", field:"duration", sortable:true}
+    {id:"who", name:"Who", field:"who", sortable:true}
 ];
 
 var options = {
@@ -15,10 +15,6 @@ var options = {
 var sortcol = "title";
 var sortdir = 1;
 var searchString = "";
-
-function avgTotalsFormatter(totals, columnDef) {
-    return "avg: " + Math.round(totals.avg[columnDef.field]) + "%";
-}
 
 function myFilter(item) {
     if (searchString != "" && item["title"].indexOf(searchString) == -1)
@@ -49,7 +45,7 @@ function loadRandomData() {
         d["num"] = i;
         d["title"] = "Task " + i;
         d["duration"] = Math.round(Math.random() * 14);
-        d["effortDriven"] = (i % 5 == 0);
+        d["who"] = "Sammy";
     }
     reloadGrid(data);
 }
@@ -100,10 +96,8 @@ $(function() {
     });
 
 
-    var h_runfilters = null;
-
     // wire up the search textbox to apply the filter to the model
-    $("#txtSearch,#txtSearch2").keyup(function(e) {
+    $("#txtSearch").keyup(function(e) {
         Slick.GlobalEditorLock.cancelCurrentEdit();
 
         // clear on Esc
@@ -121,7 +115,9 @@ $(function() {
     dataView.groupBy(
             "duration",
             function (g) {
-                return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
+                var duration = "Duration:  " + g.value;
+                var counter = "  <span style='color:green'>(" + g.count + " items)</span>";
+                return duration + counter;
             },
             function (a, b) {
                 return a.value - b.value;
