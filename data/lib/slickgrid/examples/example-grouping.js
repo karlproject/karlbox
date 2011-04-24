@@ -1,6 +1,5 @@
 var dataView;
 var grid;
-var data = [];
 
 var columns = [
     {id:"sel", name:"#", field:"num", cssClass:"cell-selection", width:40, resizable:false, selectable:false, focusable:false },
@@ -9,7 +8,6 @@ var columns = [
     {id:"%", name:"% Complete", field:"percentComplete", width:80, formatter:GraphicalPercentCompleteCellFormatter, sortable:true, groupTotalsFormatter:avgTotalsFormatter},
     {id:"start", name:"Start", field:"start", minWidth:60, sortable:true},
     {id:"finish", name:"Finish", field:"finish", minWidth:60, sortable:true},
-    {id:"effort-driven", name:"Effort Driven", width:80, minWidth:20, maxWidth:80, cssClass:"cell-effort-driven", field:"effortDriven", formatter:BoolCellFormatter, sortable:true}
 ];
 
 var options = {
@@ -119,8 +117,46 @@ $(".grid-header .ui-icon")
     $(e.target).removeClass("ui-state-hover")
 });
 
-function initialize() {
+function reloadGrid(data) {
+    dataView.beginUpdate();
+    dataView.setItems(data);
+    dataView.setFilter(myFilter);
+    dataView.groupBy(
+            "duration",
+            function (g) {
+                return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
+            },
+            function (a, b) {
+                return a.value - b.value;
+            }
+    );
+    dataView.setAggregators([
+        new Slick.Data.Aggregators.Avg("percentComplete")
+    ], false);
+    dataView.collapseGroup(0);
+    dataView.endUpdate();
+}
 
+function loadRandomData() {
+    // prepare the data
+    var data = [];
+    var sample_size = 10000;
+    for (var i = 0; i < sample_size; i++) {
+        var d = (data[i] = {});
+
+        d["id"] = "id_" + i;
+        d["num"] = i;
+        d["title"] = "Task " + i;
+        d["duration"] = Math.round(Math.random() * 14);
+        d["percentComplete"] = Math.round(Math.random() * 100);
+        d["start"] = "01/01/2009";
+        d["finish"] = "01/05/2009";
+        d["effortDriven"] = (i % 5 == 0);
+    }
+    reloadGrid(data);
+}
+
+function loadSampleData() {
     var url = "../../../example-grouping.json";
     $.ajax({
                 url: url,
@@ -129,27 +165,9 @@ function initialize() {
                     console.log("Error: " + errorThrown);
                 },
                 cache: false,
-                success: function (responsedata) {
-                    dataView.beginUpdate();
-                    dataView.setItems(responsedata);
-                    dataView.setFilter(myFilter);
-                    dataView.groupBy(
-                            "duration",
-                            function (g) {
-                                return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
-                            },
-                            function (a, b) {
-                                return a.value - b.value;
-                            }
-                    );
-                    dataView.setAggregators([
-                        new Slick.Data.Aggregators.Avg("percentComplete")
-                    ], false);
-                    dataView.collapseGroup(0);
-                    dataView.endUpdate();
-
+                success: function (data) {
+                    reloadGrid(data);
                 }});
-    return;
 }
 
 $(function() {
@@ -243,5 +261,5 @@ $(function() {
     // initialize the model after all the events have been hooked up
     $("#gridContainer").resizable();
 
-    initialize();
+    loadSampleData();
 })

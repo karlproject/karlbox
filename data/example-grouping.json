@@ -1,7 +1,6 @@
 [
     {
         "duration": 0,
-        "effortDriven": false,
         "finish": "01/05/2009",
         "id": "id_0",
         "num": 0,
@@ -11,7 +10,6 @@
     },
     {
         "duration": 1,
-        "effortDriven": false,
         "finish": "11/05/2009",
         "id": "id_1",
         "num": 1,
@@ -21,7 +19,6 @@
     },
     {
         "duration": 2,
-        "effortDriven": false,
         "finish": "03/19/2011",
         "id": "id_2",
         "num": 2,
@@ -31,7 +28,6 @@
     },
     {
         "duration": 0,
-        "effortDriven": false,
         "finish": "01/05/2010",
         "id": "id_3",
         "num": 3,
