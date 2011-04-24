@@ -1,4 +1,3 @@
-
 var dataView;
 var grid;
 var data = [];
@@ -37,11 +36,11 @@ function myFilter(item) {
     return true;
 }
 
-function percentCompleteSort(a,b) {
+function percentCompleteSort(a, b) {
     return a["percentComplete"] - b["percentComplete"];
 }
 
-function comparer(a,b) {
+function comparer(a, b) {
     var x = a[sortcol], y = b[sortcol];
     return (x == y ? 0 : (x > y ? 1 : -1));
 }
@@ -68,13 +67,13 @@ function clearGrouping() {
 
 function groupByDuration() {
     dataView.groupBy(
-        "duration",
-        function (g) {
-            return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
-        },
-        function (a, b) {
-            return a.value - b.value;
-        }
+            "duration",
+            function (g) {
+                return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
+            },
+            function (a, b) {
+                return a.value - b.value;
+            }
     );
     dataView.setAggregators([
         new Slick.Data.Aggregators.Avg("percentComplete")
@@ -83,13 +82,13 @@ function groupByDuration() {
 
 function groupByDurationOrderByCount() {
     dataView.groupBy(
-        "duration",
-        function (g) {
-            return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
-        },
-        function (a, b) {
-            return a.count - b.count;
-        }
+            "duration",
+            function (g) {
+                return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
+            },
+            function (a, b) {
+                return a.count - b.count;
+            }
     );
     dataView.setAggregators([
         new Slick.Data.Aggregators.Avg("percentComplete")
@@ -98,13 +97,13 @@ function groupByDurationOrderByCount() {
 
 function groupByDurationOrderByCountGroupCollapsed() {
     dataView.groupBy(
-        "duration",
-        function (g) {
-            return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
-        },
-        function (a, b) {
-            return a.count - b.count;
-        }
+            "duration",
+            function (g) {
+                return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
+            },
+            function (a, b) {
+                return a.count - b.count;
+            }
     );
     dataView.setAggregators([
         new Slick.Data.Aggregators.Avg("percentComplete")
@@ -112,34 +111,52 @@ function groupByDurationOrderByCountGroupCollapsed() {
 }
 
 $(".grid-header .ui-icon")
-    .addClass("ui-state-default ui-corner-all")
-    .mouseover(function(e) {
-        $(e.target).addClass("ui-state-hover")
-    })
-    .mouseout(function(e) {
-        $(e.target).removeClass("ui-state-hover")
-    });
+        .addClass("ui-state-default ui-corner-all")
+        .mouseover(function(e) {
+    $(e.target).addClass("ui-state-hover")
+})
+        .mouseout(function(e) {
+    $(e.target).removeClass("ui-state-hover")
+});
 
-$(function()
-{
-    // prepare the data
-    for (var i=0; i<500; i++) {
-        var d = (data[i] = {});
+function initialize() {
 
-        d["id"] = "id_" + i;
-        d["num"] = i;
-        d["title"] = "Task " + i;
-        d["duration"] =  Math.round(Math.random() * 14);
-        d["percentComplete"] = Math.round(Math.random() * 100);
-        d["start"] = "01/01/2009";
-        d["finish"] = "01/05/2009";
-        d["effortDriven"] = (i % 5 == 0);
-    }
+    var url = "../../../example-grouping.json";
+    $.ajax({
+                url: url,
+                dataType: 'json',
+                error: function (jqxhr, status, errorThrown) {
+                    console.log("Error: " + errorThrown);
+                },
+                cache: false,
+                success: function (responsedata) {
+                    dataView.beginUpdate();
+                    dataView.setItems(responsedata);
+                    dataView.setFilter(myFilter);
+                    dataView.groupBy(
+                            "duration",
+                            function (g) {
+                                return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
+                            },
+                            function (a, b) {
+                                return a.value - b.value;
+                            }
+                    );
+                    dataView.setAggregators([
+                        new Slick.Data.Aggregators.Avg("percentComplete")
+                    ], false);
+                    dataView.collapseGroup(0);
+                    dataView.endUpdate();
 
+                }});
+    return;
+}
+
+$(function() {
     var groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider();
     dataView = new Slick.Data.DataView({
-        groupItemMetadataProvider: groupItemMetadataProvider
-    });
+                groupItemMetadataProvider: groupItemMetadataProvider
+            });
     grid = new Slick.Grid("#myGrid", dataView, columns, options);
 
     // register the group item metadata provider to add expand/collapse group handlers
@@ -170,7 +187,7 @@ $(function()
             };
 
             // use numeric sort of % and lexicographic for everything else
-            dataView.fastSort((sortcol=="percentComplete")?percentCompleteValueFn:sortcol,args.sortAsc);
+            dataView.fastSort((sortcol == "percentComplete") ? percentCompleteValueFn : sortcol, args.sortAsc);
         }
         else {
             // using native sort with comparer
@@ -180,12 +197,12 @@ $(function()
     });
 
     // wire up model events to drive the grid
-    dataView.onRowCountChanged.subscribe(function(e,args) {
+    dataView.onRowCountChanged.subscribe(function(e, args) {
         grid.updateRowCount();
         grid.render();
     });
 
-    dataView.onRowsChanged.subscribe(function(e,args) {
+    dataView.onRowsChanged.subscribe(function(e, args) {
         grid.invalidateRows(args.rows);
         grid.render();
     });
@@ -195,18 +212,19 @@ $(function()
 
     // wire up the slider to apply the filter to the model
     $("#pcSlider,#pcSlider2").slider({
-        "range":	"min",
-        "slide":	function(event,ui) {
-            Slick.GlobalEditorLock.cancelCurrentEdit();
+                "range":    "min",
+                "slide":    function(event, ui) {
+                    Slick.GlobalEditorLock.cancelCurrentEdit();
 
-            if (percentCompleteThreshold != ui.value)
-            {
-                window.clearTimeout(h_runfilters);
-                h_runfilters = window.setTimeout(function() { dataView.refresh() }, 10);
-                percentCompleteThreshold = ui.value;
-            }
-        }
-    });
+                    if (percentCompleteThreshold != ui.value) {
+                        window.clearTimeout(h_runfilters);
+                        h_runfilters = window.setTimeout(function() {
+                            dataView.refresh()
+                        }, 10);
+                        percentCompleteThreshold = ui.value;
+                    }
+                }
+            });
 
 
     // wire up the search textbox to apply the filter to the model
@@ -223,23 +241,7 @@ $(function()
 
 
     // initialize the model after all the events have been hooked up
-    dataView.beginUpdate();
-    dataView.setItems(data);
-    dataView.setFilter(myFilter);
-    dataView.groupBy(
-        "duration",
-        function (g) {
-            return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
-        },
-        function (a, b) {
-            return a.value - b.value;
-        }
-    );
-    dataView.setAggregators([
-        new Slick.Data.Aggregators.Avg("percentComplete")
-    ], false);
-    dataView.collapseGroup(0);
-    dataView.endUpdate();
-
     $("#gridContainer").resizable();
+
+    initialize();
 })
