@@ -1,10 +1,12 @@
 var dataView;
 var grid;
+var timeslots;
+
 
 var columns = [
     {id:"sel", name:"#", field:"num", cssClass:"cell-selection", width:40, resizable:false, selectable:false, focusable:false },
-    {id:"title", name:"Title", field:"title", width:120, minWidth:120, cssClass:"cell-title", sortable:true, editor:TextCellEditor},
-    {id:"who", name:"Who", field:"who", sortable:true}
+    {id:"title", name:"Title", field:"title", width:400, minWidth:200, cssClass:"cell-title", sortable:true, editor:TextCellEditor},
+    {id:"who", name:"Who", field:"who", sortable:true, width: 150, minWidth: 100}
 ];
 
 var options = {
@@ -44,7 +46,7 @@ function loadRandomData() {
         d["id"] = "id_" + i;
         d["num"] = i;
         d["title"] = "Task " + i;
-        d["duration"] = Math.round(Math.random() * 14);
+        d["timeslot"] = Math.round(Math.random() * 4);
         d["who"] = "Sammy";
     }
     reloadGrid(data);
@@ -60,11 +62,13 @@ function loadSampleData() {
                 },
                 cache: false,
                 success: function (data) {
-                    reloadGrid(data);
+                    timeslots = data.timeslots;
+                    reloadGrid(data.items);
                 }});
 }
 
 $(function() {
+
     var groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider();
     dataView = new Slick.Data.DataView({
                 groupItemMetadataProvider: groupItemMetadataProvider
@@ -113,15 +117,15 @@ $(function() {
     $("#gridContainer").resizable();
     dataView.setFilter(myFilter);
     dataView.groupBy(
-            "duration",
+            "timeslot",
             function (g) {
-                var duration = "Duration:  " + g.value;
+                var timeslot = "Timeslot:  " + timeslots[g.value];
                 var counter = "  <span style='color:green'>(" + g.count + " items)</span>";
-                return duration + counter;
+                return timeslot + counter;
             },
             function (a, b) {
                 return a.value - b.value;
             }
     );
     loadSampleData();
-})
+});
