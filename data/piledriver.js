@@ -5,9 +5,7 @@ var columns = [
     {id:"sel", name:"#", field:"num", cssClass:"cell-selection", width:40, resizable:false, selectable:false, focusable:false },
     {id:"title", name:"Title", field:"title", width:120, minWidth:120, cssClass:"cell-title", sortable:true, editor:TextCellEditor},
     {id:"duration", name:"Duration", field:"duration", sortable:true},
-    {id:"%", name:"% Complete", field:"percentComplete", width:80, formatter:GraphicalPercentCompleteCellFormatter, sortable:true, groupTotalsFormatter:avgTotalsFormatter},
-    {id:"start", name:"Start", field:"start", minWidth:60, sortable:true},
-    {id:"finish", name:"Finish", field:"finish", minWidth:60, sortable:true}
+    {id:"%", name:"% Complete", field:"percentComplete", width:80, formatter:GraphicalPercentCompleteCellFormatter, sortable:true, groupTotalsFormatter:avgTotalsFormatter}
 ];
 
 var options = {
@@ -61,8 +59,6 @@ function loadRandomData() {
         d["title"] = "Task " + i;
         d["duration"] = Math.round(Math.random() * 14);
         d["percentComplete"] = Math.round(Math.random() * 100);
-        d["start"] = "01/01/2009";
-        d["finish"] = "01/05/2009";
         d["effortDriven"] = (i % 5 == 0);
     }
     reloadGrid(data);
