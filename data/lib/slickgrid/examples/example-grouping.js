@@ -123,7 +123,7 @@ $(".grid-header .ui-icon")
 $(function()
 {
     // prepare the data
-    for (var i=0; i<50000; i++) {
+    for (var i=0; i<500; i++) {
         var d = (data[i] = {});
 
         d["id"] = "id_" + i;

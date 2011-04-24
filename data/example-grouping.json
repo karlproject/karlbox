@@ -1,0 +1,43 @@
+[
+    {
+        "duration": 0,
+        "effortDriven": false,
+        "finish": "01/05/2009",
+        "id": "id_0",
+        "num": 0,
+        "percentComplete": 36,
+        "start": "01/01/2009",
+        "title": "Task 0"
+    },
+    {
+        "duration": 1,
+        "effortDriven": false,
+        "finish": "11/05/2009",
+        "id": "id_1",
+        "num": 1,
+        "percentComplete": 36,
+        "start": "01/01/2009",
+        "title": "Task 1"
+    },
+    {
+        "duration": 2,
+        "effortDriven": false,
+        "finish": "03/19/2011",
+        "id": "id_2",
+        "num": 2,
+        "percentComplete": 76,
+        "start": "02/19/2011",
+        "title": "Task 2"
+    },
+    {
+        "duration": 0,
+        "effortDriven": false,
+        "finish": "01/05/2010",
+        "id": "id_3",
+        "num": 3,
+        "percentComplete": 36,
+        "start": "01/01/2010",
+        "title": "Task 3"
+    },
+
+]
