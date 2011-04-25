@@ -72,16 +72,20 @@ exports.test_starts_null = function(test) {
     test.assertEqual(dbt.worker, null);
 };
 
+
 exports.test_make_dashboard = function(test) {
 
     test.assertEqual(dbt.this_tab, null);
     dbt.make_dashboard();
 
-    timeout(500, function () {
+    // XXX this test needs to change... we have no 
+    // XXX assurance that the timeout is enough.
+    // XXX -> this test may fail randomly
+    timeout(2000, function () {
         test.assertNotEqual(dbt.this_tab, null);
         test.assertNotEqual(dbt.worker, null);
         test.done();
     });
-    test.waitUntilDone(800);
+    test.waitUntilDone();
 };
 
