@@ -1,4 +1,5 @@
 // Suppress console.log spewage in addon code
+// return;
 const env = require("env");
 env.log = function () {
 };
@@ -25,6 +26,21 @@ FakeState.prototype.fileNames = function() {
         }
     }
     return fileNames;
+};
+FakeState.prototype.byServerPath = function(serverPath) {
+    for (var fileName in this.files) {
+        if (this.files.hasOwnProperty(fileName)) {
+            if (this.files[fileName].serverPath == serverPath) {
+                return this.files[fileName];
+            }
+        }
+    }
+    return undefined;
+};
+FakeState.prototype.nameToPath = function(fileName) {
+    // for the test, every @ character is converted to - in the name.
+    var serverPath = fileName.replace(/@/g, '-');
+    return serverPath;
 };
 
 
@@ -100,10 +116,11 @@ FakeQueryRequest.prototype.post = function() {
     var changed_files = [];
     this.server_state.fileNames().forEach(function(fileName) {
         var last_mod = '' + self.server_state.files[fileName].lastModification;
+        var serverPath =  self.server_state.nameToPath(fileName);
         if (last_mod > self.options.content.timestampfrom) {
             changed_files.push({
                 fileName: fileName,
-                serverPath: fileName,
+                serverPath: serverPath,
                 currentRemote: last_mod
             });
         }
@@ -133,23 +150,42 @@ FakeMultiPoster.prototype.post = function() {
     this.options.fileNames.forEach(function(fileName) {
         var response;
         var status;
+        var result;
         self.server_state.stepTime();
-        if (self.server_state.files[fileName] !== undefined) { 
-            status = "modified";
+        // simulate server-side filename mangling
+        var serverPath = self.server_state.nameToPath(fileName);
+        var stored_file = self.server_state.byServerPath(serverPath);
+        //
+        if (stored_file !== undefined) { 
+            if (self.server_state.files[fileName]) {
+                status = "modified";
+                result = "OK";
+            } else {
+                // The file is in conflict because there is already a different
+                // file, for which the server uses the same path.
+                status = "conflict";
+                result = "CONFLICT";
+            }
         } else {
             status = "added";
-            self.server_state.files[fileName] = {};
+            result = "OK";
+            stored_file = self.server_state.files[fileName] = {};
+        }
+        //
+        if (result == "OK") {
+            // added or modified. Simulate "storing the file"
+            stored_file.content = self.client_state.files[fileName].content;
+            stored_file.lastModification = self.server_state.timestamp;
+            stored_file.serverPath = serverPath;
         }
         response = {
                 json: {
                     status: status,
-                    result: "OK",
+                    result: result,
                     filename: fileName,
-                    lastremote: self.server_state.timestamp
+                    lastremote: stored_file.lastModification
                 }
             };
-        self.server_state.files[fileName].content = self.client_state.files[fileName].content;
-        self.server_state.files[fileName].lastModification = self.server_state.timestamp;
         //
         if (self.options.onEachResult) {
             self.options.onEachResult(fileName, response);
@@ -172,10 +208,11 @@ FakeMultiGetter.prototype.get = function() {
     var self = this;
     this.options.syncItems.forEach(function(syncItem) {
         var response;
-        if (self.server_state.files[syncItem.serverPath] !== undefined) { 
+        var server_file = self.server_state.files[syncItem.fileName];
+        if  (server_file !== undefined && server_file.serverPath == syncItem.serverPath) { 
             response = {
                 status: '200',
-                text: self.server_state.files[syncItem.serverPath].content
+                text: server_file.content
             };
         } else {
             response = {
@@ -249,6 +286,7 @@ function check_statuses(test, sl, o) {
     test.assertEqual(sl.pushResults.conflicts.length, o.push_conflicts);
 }
 
+
 exports.test_empty = function(test) {
     var completed = 0;
     var sync_data = {};
@@ -315,10 +353,10 @@ exports.test_first_download = function(test) {
 
     // some files on the server
     sl.test_server_state.files = {
-        'aaa.txt': {content: 'Content', lastModification: 100},  
-        'bbb.txt': {content: 'Content', lastModification: 100},  
-        'ccc.txt': {content: 'Content', lastModification: 100},  
-        'ddd.txt': {content: 'Content', lastModification: 100},  
+        'aaa.txt': {content: 'Content', lastModification: 100, serverPath: 'aaa.txt'}, 
+        'bbb.txt': {content: 'Content', lastModification: 100, serverPath: 'bbb.txt'},
+        'ccc.txt': {content: 'Content', lastModification: 100, serverPath: 'ccc.txt'},
+        'ddd.txt': {content: 'Content', lastModification: 100, serverPath: 'ddd.txt'}
     };
 
     sl.sync();
@@ -442,10 +480,10 @@ exports.test_client_adding = function(test) {
 
     // some files on the server
     sl.test_server_state.files = {
-        'aaa.txt': {content: 'Content', lastModification: 100},  
-        'bbb.txt': {content: 'Content', lastModification: 100},  
-        'ccc.txt': {content: 'Content', lastModification: 100},  
-        'ddd.txt': {content: 'Content', lastModification: 100},  
+        'aaa.txt': {content: 'Content', lastModification: 100, serverPath: 'aaa.txt'},
+        'bbb.txt': {content: 'Content', lastModification: 100, serverPath: 'bbb.txt'},
+        'ccc.txt': {content: 'Content', lastModification: 100, serverPath: 'ccc.txt'},
+        'ddd.txt': {content: 'Content', lastModification: 100, serverPath: 'ddd.txt'}
     };
 
     sl.sync();
@@ -535,10 +573,10 @@ exports.test_client_modifying = function(test) {
 
     // some files on the server
     sl.test_server_state.files = {
-        'aaa.txt': {content: 'Content', lastModification: 100},  
-        'bbb.txt': {content: 'Content', lastModification: 100},  
-        'ccc.txt': {content: 'Content', lastModification: 100},  
-        'ddd.txt': {content: 'Content', lastModification: 100},  
+        'aaa.txt': {content: 'Content', lastModification: 100, serverPath: 'aaa.txt'},
+        'bbb.txt': {content: 'Content', lastModification: 100, serverPath: 'bbb.txt'},
+        'ccc.txt': {content: 'Content', lastModification: 100, serverPath: 'ccc.txt'},
+        'ddd.txt': {content: 'Content', lastModification: 100, serverPath: 'ddd.txt'}
     };
 
     sl.sync();
@@ -628,10 +666,10 @@ exports.test_server_adding = function(test) {
 
     // some files on the server
     sl.test_server_state.files = {
-        'aaa.txt': {content: 'Content', lastModification: 100},  
-        'bbb.txt': {content: 'Content', lastModification: 100},  
-        'ccc.txt': {content: 'Content', lastModification: 100},  
-        'ddd.txt': {content: 'Content', lastModification: 100},  
+        'aaa.txt': {content: 'Content', lastModification: 100, serverPath: 'aaa.txt'},
+        'bbb.txt': {content: 'Content', lastModification: 100, serverPath: 'bbb.txt'},
+        'ccc.txt': {content: 'Content', lastModification: 100, serverPath: 'ccc.txt'},
+        'ddd.txt': {content: 'Content', lastModification: 100, serverPath: 'ddd.txt'}
     };
 
     sl.sync();
@@ -660,7 +698,7 @@ exports.test_server_adding = function(test) {
     // some files on the server
     sl.test_server_state.stepTime()
     sl.test_server_state.files['eee.txt'] = {
-        content: 'Content', lastModification: sl.test_server_state.timestamp
+        content: 'Content', lastModification: sl.test_server_state.timestamp, serverPath: 'eee.txt'
     };
 
     sl.sync();
@@ -721,10 +759,10 @@ exports.test_server_modifying = function(test) {
 
     // some files on the server
     sl.test_server_state.files = {
-        'aaa.txt': {content: 'Content', lastModification: 100},  
-        'bbb.txt': {content: 'Content', lastModification: 100},  
-        'ccc.txt': {content: 'Content', lastModification: 100},  
-        'ddd.txt': {content: 'Content', lastModification: 100},  
+        'aaa.txt': {content: 'Content', lastModification: 100, serverPath: 'aaa.txt'},  
+        'bbb.txt': {content: 'Content', lastModification: 100, serverPath: 'bbb.txt'},  
+        'ccc.txt': {content: 'Content', lastModification: 100, serverPath: 'ccc.txt'},  
+        'ddd.txt': {content: 'Content', lastModification: 100, serverPath: 'ddd.txt'}
     };
 
     sl.sync();
@@ -753,7 +791,7 @@ exports.test_server_modifying = function(test) {
     // some files on the server
     sl.test_server_state.stepTime()
     sl.test_server_state.files['ccc.txt'] = {
-        content: 'New content', lastModification: sl.test_server_state.timestamp
+        content: 'New content', lastModification: sl.test_server_state.timestamp, serverPath: 'ccc.txt'
     };
 
     sl.sync();
@@ -803,7 +841,7 @@ exports.test_server_modifying = function(test) {
 
 };
 
-exports.test_add_delete_combo1 = function(test) {
+exports.test_add_modify_combo1 = function(test) {
     var completed = 0;
     var sync_data = {};
     var sl = SyncList({
@@ -814,10 +852,10 @@ exports.test_add_delete_combo1 = function(test) {
 
     // some files on the server
     sl.test_server_state.files = {
-        'aaa.txt': {content: 'Content', lastModification: 100},  
-        'bbb.txt': {content: 'Content', lastModification: 100},  
-        'ccc.txt': {content: 'Content', lastModification: 100},  
-        'ddd.txt': {content: 'Content', lastModification: 100},  
+        'aaa.txt': {content: 'Content', lastModification: 100, serverPath: 'aaa.txt'},
+        'bbb.txt': {content: 'Content', lastModification: 100, serverPath: 'bbb.txt'},
+        'ccc.txt': {content: 'Content', lastModification: 100, serverPath: 'ccc.txt'},
+        'ddd.txt': {content: 'Content', lastModification: 100, serverPath: 'ddd.txt'} 
     };
 
     sl.sync();
@@ -846,10 +884,10 @@ exports.test_add_delete_combo1 = function(test) {
     // some files on the server
     sl.test_server_state.stepTime()
     sl.test_server_state.files['eee.txt'] = {
-        content: 'New content', lastModification: sl.test_server_state.timestamp
+        content: 'New content', lastModification: sl.test_server_state.timestamp, serverPath: 'eee.txt'
     };
     sl.test_server_state.files['ccc.txt'] = {
-        content: 'New content', lastModification: sl.test_server_state.timestamp
+        content: 'New content', lastModification: sl.test_server_state.timestamp, serverPath: 'ccc.txt'
     };
     // some files on the client
     sl.test_client_state.stepTime()
@@ -907,4 +945,102 @@ exports.test_add_delete_combo1 = function(test) {
     });
 
 };
+
+exports.test_server_file_mangling_1 = function(test) {
+    var completed = 0;
+    var sync_data = {};
+    var sl = SyncList({
+        onComplete: function() {
+            completed += 1;
+        }
+    });
+
+    // some files on the server
+    sl.test_server_state.files = {
+        'aa@.txt': {content: 'Content', lastModification: 100, serverPath: 'aa-.txt'},
+        'bbb.txt': {content: 'Content', lastModification: 100, serverPath: 'bbb.txt'},
+        'ccc.txt': {content: 'Content', lastModification: 100, serverPath: 'ccc.txt'},
+        'ddd.txt': {content: 'Content', lastModification: 100, serverPath: 'ddd.txt'}
+    };
+
+    sl.sync();
+
+    test.assertEqual(completed, 1);
+    test.assertEqual(sl.test_posted_query.length, 1);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+    check_statuses(test, sl, {
+        pull_added: 4,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+
+    // some files on the client
+    sl.test_client_state.stepTime()
+    sl.test_client_state.files['aa-.txt'] = {
+        content: 'Content', lastModification: sl.test_client_state.timestamp
+    };
+
+    sl.sync();
+
+    test.assertEqual(completed, 2);
+    test.assertEqual(sl.test_posted_query.length, 2);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 5);
+
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 1
+    });
+    test.assertEqual(sl.sync_statuses.conflict.length, 0);
+
+
+    sl.sync();
+
+    test.assertEqual(completed, 3);
+    test.assertEqual(sl.test_posted_query.length, 3);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 5);
+
+    // from this point, the conflict will become permanent
+    // (since no push will be attempted any more)
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+    test.assertEqual(sl.sync_statuses.conflict.length, 1);
+
+};
+
 
