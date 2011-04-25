@@ -200,9 +200,9 @@ exports.test_download_zero_file = function(test) {
         urlMethod: 'dl',
         authHeader: 'Basic YWRtaW46YWRtaW4=',
         baseDir: '/testdir',
-        fileNames: [],
-        onEachResult: function(fileName, response) {
-            received.push({fileName: fileName, response: response});
+        syncItems: [],
+        onEachResult: function(syncItem, response) {
+            received.push({syncItem: syncItem, response: response});
         },
         onComplete: function() {
             completed += 1;
@@ -223,9 +223,11 @@ exports.test_download_single_file = function(test) {
         urlMethod: 'dl',
         authHeader: 'Basic YWRtaW46YWRtaW4=',
         baseDir: '/testdir',
-        fileNames: ['aaa.txt'],
-        onEachResult: function(fileName, response) {
-            received.push({fileName: fileName, response: response});
+        syncItems: [
+            {fileName: 'LOCALaaa.txt', serverPath: 'aaa.txt'}
+        ],
+        onEachResult: function(syncItem, response) {
+            received.push({syncItem: syncItem, response: response});
         },
         onComplete: function() {
             completed += 1;
@@ -235,6 +237,8 @@ exports.test_download_single_file = function(test) {
 
     test.assertEqual(completed, 1);
     test.assertEqual(received.length, 1);
+    test.assertEqual(received[0].syncItem.fileName, 'LOCALaaa.txt');
+    test.assertEqual(received[0].syncItem.serverPath, 'aaa.txt');
     test.assertEqual(getter.posted.length, 1);
     test.assertEqual(getter.posted[0].url, 'http://localhost:6543/communities/default/files/aaa.txt/dl');
 };
@@ -247,9 +251,14 @@ exports.test_download_more_files = function(test) {
         urlMethod: 'dl',
         authHeader: 'Basic YWRtaW46YWRtaW4=',
         baseDir: '/testdir',
-        fileNames: ['aaa.txt', 'bbb.txt', 'ccc.html', 'ddd.pdf'],
-        onEachResult: function(fileName, response) {
-            received.push({fileName: fileName, response: response});
+        syncItems: [
+            {fileName: 'LOCALaaa.txt', serverPath: 'aaa.txt'},
+            {fileName: 'LOCALbbb.txt', serverPath: 'bbb.txt'},
+            {fileName: 'LOCALccc.html', serverPath: 'ccc.html'},
+            {fileName: 'LOCALddd.pdf', serverPath: 'ddd.pdf'}
+        ],
+        onEachResult: function(syncItem, response) {
+            received.push({syncItem: syncItem, response: response});
         },
         onComplete: function() {
             completed += 1;
@@ -262,12 +271,20 @@ exports.test_download_more_files = function(test) {
     test.assertEqual(getter.posted.length, 4);
 
     test.assertEqual(getter.posted[0].url, 'http://localhost:6543/communities/default/files/aaa.txt/dl');
+    test.assertEqual(received[0].syncItem.fileName, 'LOCALaaa.txt');
+    test.assertEqual(received[0].syncItem.serverPath, 'aaa.txt');
 
     test.assertEqual(getter.posted[1].url, 'http://localhost:6543/communities/default/files/bbb.txt/dl');
+    test.assertEqual(received[1].syncItem.fileName, 'LOCALbbb.txt');
+    test.assertEqual(received[1].syncItem.serverPath, 'bbb.txt');
 
     test.assertEqual(getter.posted[2].url, 'http://localhost:6543/communities/default/files/ccc.html/dl');
+    test.assertEqual(received[2].syncItem.fileName, 'LOCALccc.html');
+    test.assertEqual(received[2].syncItem.serverPath, 'ccc.html');
 
     test.assertEqual(getter.posted[3].url, 'http://localhost:6543/communities/default/files/ddd.pdf/dl');
+    test.assertEqual(received[3].syncItem.fileName, 'LOCALddd.pdf');
+    test.assertEqual(received[3].syncItem.serverPath, 'ddd.pdf');
 };
 
 

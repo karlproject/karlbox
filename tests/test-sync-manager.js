@@ -103,6 +103,7 @@ FakeQueryRequest.prototype.post = function() {
         if (last_mod > self.options.content.timestampfrom) {
             changed_files.push({
                 fileName: fileName,
+                serverPath: fileName,
                 currentRemote: last_mod
             });
         }
@@ -169,12 +170,12 @@ FakeMultiGetter.prototype._setState = function(server_state) {
 };
 FakeMultiGetter.prototype.get = function() {
     var self = this;
-    this.options.fileNames.forEach(function(fileName) {
+    this.options.syncItems.forEach(function(syncItem) {
         var response;
-        if (self.server_state.files[fileName] !== undefined) { 
+        if (self.server_state.files[syncItem.serverPath] !== undefined) { 
             response = {
                 status: '200',
-                text: self.server_state.files[fileName].content
+                text: self.server_state.files[syncItem.serverPath].content
             };
         } else {
             response = {
@@ -182,7 +183,7 @@ FakeMultiGetter.prototype.get = function() {
             };
         }
         if (self.options.onEachResult) {
-            self.options.onEachResult(fileName, response);
+            self.options.onEachResult(syncItem, response);
         }
     });
     if (this.options.onComplete) {
