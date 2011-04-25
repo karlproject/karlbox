@@ -1043,4 +1043,101 @@ exports.test_server_file_mangling_1 = function(test) {
 
 };
 
+exports.test_server_file_mangling_2 = function(test) {
+    var completed = 0;
+    var sync_data = {};
+    var sl = SyncList({
+        onComplete: function() {
+            completed += 1;
+        }
+    });
+
+    // some files on the server
+    sl.test_server_state.files = {
+        'aa-.txt': {content: 'Content', lastModification: 100, serverPath: 'aa-.txt'},
+        'bbb.txt': {content: 'Content', lastModification: 100, serverPath: 'bbb.txt'},
+        'ccc.txt': {content: 'Content', lastModification: 100, serverPath: 'ccc.txt'},
+        'ddd.txt': {content: 'Content', lastModification: 100, serverPath: 'ddd.txt'}
+    };
+
+    sl.sync();
+
+    test.assertEqual(completed, 1);
+    test.assertEqual(sl.test_posted_query.length, 1);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 4);
+
+    check_statuses(test, sl, {
+        pull_added: 4,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+
+
+    // some files on the client
+    sl.test_client_state.stepTime()
+    sl.test_client_state.files['aa@.txt'] = {
+        content: 'Content', lastModification: sl.test_client_state.timestamp
+    };
+
+    sl.sync();
+
+    test.assertEqual(completed, 2);
+    test.assertEqual(sl.test_posted_query.length, 2);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 5);
+
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 1
+    });
+    test.assertEqual(sl.sync_statuses.conflict.length, 0);
+
+
+    sl.sync();
+
+    test.assertEqual(completed, 3);
+    test.assertEqual(sl.test_posted_query.length, 3);
+
+    test.assertEqual(sl.test_server_state.fileNames().length, 4);
+    test.assertEqual(sl.test_client_state.fileNames().length, 5);
+
+    // from this point, the conflict will become permanent
+    // (since no push will be attempted any more)
+    check_statuses(test, sl, {
+        pull_added: 0,
+        pull_modified: 0,
+        pull_deleted: 0,
+        pull_errors: 0,
+        pull_conflicts: 0,
+
+        push_added: 0,
+        push_modified: 0,
+        push_deleted: 0,
+        push_errors: 0,
+        push_conflicts: 0
+    });
+    test.assertEqual(sl.sync_statuses.conflict.length, 1);
+
+};
+
 
