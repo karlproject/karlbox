@@ -1,0 +1,71 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>SlickGrid example: Grouping</title>
+    <link rel="stylesheet" href="lib/slickgrid/slick.grid.css" type="text/css" media="screen" charset="utf-8"/>
+    <link rel="stylesheet" href="lib/slickgrid/controls/slick.pager.css" type="text/css" media="screen"
+          charset="utf-8"/>
+    <link rel="stylesheet" href="lib/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" media="screen"
+          charset="utf-8"/>
+    <link rel="stylesheet" href="lib/slickgrid/examples/examples.css" type="text/css" media="screen" charset="utf-8"/>
+    <link rel="stylesheet" href="lib/slickgrid/controls/slick.columnpicker.css" type="text/css" media="screen"
+          charset="utf-8"/>
+    <style>
+        .cell-title {
+            font-weight: bold;
+        }
+
+        .cell-effort-driven {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div style="position:relative">
+    <div style="width:600px;">
+        <div class="grid-header" style="height: 2.8em; width:100%">
+            <div style="float:right; padding: 0.2em">
+                <label>Title Filter:</label>
+                <input type=text id="txtSearch" size="30">
+            </div>
+            <label>SlickGrid</label>
+        </div>
+        <div id="myGrid" style="width:100%;height:350px;"></div>
+    </div>
+
+    <div class="options-panel">
+        <div>
+            <button onclick="loadRandomData()">Load 10k Random Data</button>
+            <button onclick="loadSampleData()">Load Sample Data</button>
+        </div>
+        <p>
+            <h2>Add New Item</h2>
+        <form id="add-new-item">
+            <div><input id="ani-title" placeholder="Title"/> </div>
+            <div><input id="ani-who" placeholder="Who"/> </div>
+            <div><input id="ani-timeslot" placeholder="Timeslot"/> </div>
+            <div><input type="submit" id="save-item" value="Add Item" /></div>
+        </form>
+        </p>
+    </div>
+</div>
+
+
+<script src="lib/js/jquery-1.5.1.min.js"></script>
+<script src="lib/js/jquery-ui-1.8.11.custom.min.js"></script>
+<script src="lib/slickgrid/lib/jquery.event.drag-2.0.min.js"></script>
+
+<script src="lib/slickgrid/slick.core.js"></script>
+<script src="lib/slickgrid/slick.editors.js"></script>
+<script src="lib/slickgrid/plugins/slick.cellrangedecorator.js"></script>
+<script src="lib/slickgrid/plugins/slick.cellrangeselector.js"></script>
+<script src="lib/slickgrid/plugins/slick.cellselectionmodel.js"></script>
+<script src="lib/slickgrid/slick.grid.js"></script>
+<script src="lib/slickgrid/slick.groupitemmetadataprovider.js"></script>
+<script src="lib/slickgrid/slick.dataview.js"></script>
+
+<script type="text/javascript" src="piledriver.js"></script>
+
+</body>
+</html>
