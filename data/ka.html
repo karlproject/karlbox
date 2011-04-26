@@ -20,12 +20,20 @@
         <span>KARL Apps: </span>
         <ul id="ka-appswitcher">
             <li><a href="#dashboard"><span class="ka-i18n"
-                                           data-options='{"1": "Dashboard", "2": "Visage"}'>Dashboard</span></a></li>
-            <li><a href="#intranet">Intranet</a></li>
-            <li><a href="#communities">Communities</a></li>
-            <li><a href="#people">People</a></li>
-            <li><a href="#agility">Agility</a></li>
-            <li><a href="#karlbox" class="ka-currentapp">Karlbox</a></li>
+                                           data-options='{"1": "Dashboard", "2": "Tableux de Bord"}'>Dashboard</span></a>
+            </li>
+            <li><a href="#intranet"><span class="ka-i18n"
+                                          data-options='{"1": "Intranet", "2": "Bureaux"}'>Intranet</span></a></li>
+            <li><a href="#communities"><span class="ka-i18n"
+                                             data-options='{"1": "Communities", "2": "Communautes"}'>Communities</span></a>
+            </li>
+            <li><a href="#people"><span class="ka-i18n"
+                                        data-options='{"1": "People", "2": "Personnel"}'>People</span></a></li>
+            <li><a href="#agility"><span class="ka-i18n"
+                                         data-options='{"1": "Agility", "2": "Agilite"}'>Agility</span></a></li>
+            <li><a href="#karlbox" class="ka-currentapp"><span class="ka-i18n"
+                                                               data-options='{"1": "Karlbox", "2": "Karlboite"}'>Karlbox</span></a>
+            </li>
         </ul>
     </div>
 
@@ -53,10 +61,13 @@
 
     <div id="ka-app-bg">
         <!-- All the panels go in here for now -->
-        <div class="ka-panel" id="ka-panel-homepage"><p>Welcome to KARL Apps. This demo shows the
-            "Popptop" UX concept.</p>
+        <div class="ka-panel" id="ka-panel-homepage"><p><span class="ka-i18n"
+                                                              data-options='{"1": "Welcome to KARL Apps. This demo shows the", "2": "Bienvenue a KARL Apps. Cette demo affiche"}'>Welcome to KARL Apps. This demo shows the</span>
+            "Popptop" <span class="ka-i18n"
+                            data-options='{"1": "UX concept", "2": "le concept"}'>UX concept</span>.</p>
 
-            <p>Just for fun:</p>
+            <p><span class="ka-i18n"
+                     data-options='{"1": "Just for fun", "2": "Juste pour amusement"}'>Just for fun</span>:</p>
 
             <p>
                 <button class="ka-switchlang" data-options='{"lang": "1"}'>English</button>
@@ -77,35 +88,37 @@
             projects.</p>
 
 
-<div style="position:relative">
-    <div class="ka-grid-frame" style="width:600px;">
-        <div class="grid-header" style="height: 2.8em; width:100%">
-            <div style="float:right; padding: 0.2em">
-                <label>Title Filter:</label>
-                <input type=text id="txtSearch" size="30">
-            </div>
-            <label>Migration Project</label>
-        </div>
-        <div id="myGrid" style="width:100%;height:350px;"></div>
-    </div>
+            <div style="position:relative">
+                <div class="ka-grid-frame" style="width:600px;">
+                    <div class="grid-header" style="height: 2.8em; width:100%">
+                        <div style="float:right; padding: 0.2em">
+                            <label>Title Filter:</label>
+                            <input type=text id="txtSearch" size="30">
+                        </div>
+                        <label>Migration Project</label>
+                    </div>
+                    <div id="myGrid" style="width:100%;height:350px;"></div>
+                </div>
 
-    <div class="options-panel">
-        <div>
-            <button onclick="loadRandomData()">Load 10k Random Data</button>
-            <button onclick="loadSampleData()">Load Sample Data</button>
-        </div>
-        <p>
-            <h2>Add New Item</h2>
-        <form id="add-new-item">
-            <div><input id="ani-title" placeholder="Title"/> </div>
-            <div><input id="ani-who" placeholder="Who"/> </div>
-            <div><input id="ani-timeslot" placeholder="Timeslot"/> </div>
-            <div><input type="submit" id="save-item" value="Add Item" /></div>
-        </form>
-        </p>
-    </div>
-</div>
-            
+                <div class="options-panel">
+                    <div>
+                        <button onclick="loadRandomData()">Load 10k Random Data</button>
+                        <button onclick="loadSampleData()">Load Sample Data</button>
+                    </div>
+                    <p>
+
+                    <h2>Add New Item</h2>
+
+                    <form id="add-new-item">
+                        <div><input id="ani-title" placeholder="Title"/></div>
+                        <div><input id="ani-who" placeholder="Who"/></div>
+                        <div><input id="ani-timeslot" placeholder="Timeslot"/></div>
+                        <div><input type="submit" id="save-item" value="Add Item"/></div>
+                    </form>
+                    </p>
+                </div>
+            </div>
+
 
         </div>
         <div class="ka-panel" id="ka-panel-karlbox" style="display:block"><h2>Setup</h2>

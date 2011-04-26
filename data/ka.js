@@ -11,7 +11,6 @@ function switchPanel(tgt_panel) {
 function switchApp(app_id) {
     // Change styling on app menu, hide existing panel, show new
     var sel = '#ka-appswitcher a[href$="#' + app_id + '"]';
-    console.log(sel);
     var tgt = $(sel);
     $('.ka-currentapp').removeClass('ka-currentapp');
     tgt.addClass('ka-currentapp');
@@ -36,7 +35,7 @@ $(document).ready(function() {
 
     // Hook up the app switcher at the top
     $('#ka-appswitcher').click(function (evt) {
-        var tgt = $(evt.target);
+        var tgt = $(evt.target).parent();
         var app_id = tgt.attr("href").slice(1);
         switchApp(app_id);
     })
@@ -98,6 +97,7 @@ function dumpGrid () {
     // Give something on the outside (e.g. addon) access to data
     return data;
 }
+
 function loadRandomData() {
     // prepare the data
     var data = [];
