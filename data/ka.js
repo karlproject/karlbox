@@ -52,6 +52,13 @@ $(document).ready(function() {
     // Switch to whatever is in the hash
     var app_id = window.location.hash.slice(1);
     switchApp(app_id);
+
+    $('#kb-savesetup').click(function (evt) {
+        // an event that the JetPack can listen to
+        // "poor man's event" :)
+        save_preferences && save_preferences();
+        return false;
+    });
 });
 
 var dataView;
@@ -100,18 +107,25 @@ function dumpGrid () {
 
 function loadRandomData() {
     // prepare the data
-    var data = [];
+    var _items = [];
     var sample_size = 10000;
     for (var i = 0; i < sample_size; i++) {
-        var d = (data[i] = {});
+        var d = (_items[i] = {});
 
-        d["id"] = "id_" + i;
-        d["num"] = i;
-        d["title"] = "Task " + i;
-        d["timeslot"] = Math.round(Math.random() * 4);
-        d["who"] = "Sammy";
+        d.id = "id_" + i;
+        d.num = i;
+        d.title = "Task " + i;
+        d.timeslot = Math.round(Math.random() * 4);
+        d.who = "Sammy";
     }
-    reloadGrid(data);
+    timeslots = {
+        "0": "January 1",
+        "1": "January 8",
+        "2": "February 1",
+        "3": "March 15",
+        "4": "May 1"
+    };
+    reloadGrid(_items);
 }
 
 function loadSampleData() {

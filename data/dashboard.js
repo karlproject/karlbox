@@ -1,5 +1,5 @@
-$('#kb-savesetup').click(function (evt) {
 
+window.save_preferences = function() {
     var username = $('#kb-username').val();
     var password = $('#kb-password').val();
     var karlurl = $('#kb-karlurl').val();
@@ -15,7 +15,7 @@ $('#kb-savesetup').click(function (evt) {
     var message = {type: "store_setupdata", value: setup};
     postMessage(message);
     return false;
-});
+};
 
 onMessage = function onMessage(message) {
     var mv = message.value;
@@ -33,4 +33,6 @@ onMessage = function onMessage(message) {
             return;
         }
     }
+
 };
+
