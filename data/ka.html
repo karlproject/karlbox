@@ -10,9 +10,13 @@
 <div id="ka-global-bg">
 
     <div id="ka-globalmenu">
+        <div id="ka-profilepanel">
+            <a href="#profile">paul@agendaless.com</a> (<a href="#logout">logout</a>)
+        </div>
         <span>KARL Apps: </span>
         <ul id="ka-appswitcher">
-            <li><a href="#dashboard">Dashboard</a></li>
+            <li><a href="#dashboard"><span class="ka-i18n"
+                                           data-options='{"1": "Dashboard", "2": "Visage"}'>Dashboard</span></a></li>
             <li><a href="#intranet">Intranet</a></li>
             <li><a href="#communities">Communities</a></li>
             <li><a href="#people">People</a></li>
@@ -34,8 +38,7 @@
             </a>
         </div>
         <div id="ka-header-logoframe">
-            <a class="ka-subnav" href="#ka-index" id="ka-header-logo"
-               data-options='{"tgt":"#ka-app-bg"}'>
+            <a class="ka-subnav" href="#homepage" id="ka-header-logo">
                 <img src="images/logo.gif"/>
             </a>
             <a href="#" id="ka-header-appname">
@@ -46,6 +49,16 @@
 
     <div id="ka-app-bg">
         <!-- All the panels go in here for now -->
+        <div class="ka-panel" id="ka-panel-homepage"><p>Welcome to KARL Apps. This demo shows the
+            "Popptop" UX concept.</p>
+
+            <p>Just for fun:</p>
+
+            <p>
+                <button class="ka-switchlang" data-options='{"lang": "1"}'>English</button>
+                <button class="ka-switchlang" data-options='{"lang": "2"}'>Fran&#231;ais</button>
+            </p>
+        </div>
         <div class="ka-panel" id="ka-panel-dashboard"><p>The Dashboard app provides a configurable, consolidated view of
             all
             KARL information relevant to you.</p></div>

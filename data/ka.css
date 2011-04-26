@@ -90,6 +90,9 @@ following. */
     float: right;
 }
 
+#ka-profilepanel {
+    float: right;
+}
 #ka-app-bg {
     margin: 2em;
 }
