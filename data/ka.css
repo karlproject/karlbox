@@ -1,6 +1,6 @@
 body {
     margin: 0;
-    background: #F1EFE2;
+    background: #ffffe0; /*#F1EFE2; */
 }
 
 #ka-globalmenu {
@@ -32,18 +32,19 @@ body {
 /* Let's have a consistent set of font sizes and styles.
 Everything in the app should be set against one of the
 following. */
-#ka-app-bg, #ka-globalmenu {
+#ka-app-bg, #ka-globalmenu, #ka-header-searchbox {
     font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
     font-size: 0.8em;
 }
 #ka-header a{
     font-size: 1.4em;
     font-family: 'Georgia', arial, serif;
-    color: #708090;
 }
 
 #ka-header-menu a {
     font-size: 0.8em;
+    color: black;
+    font-weight: lighter;
 }
 
 /* /end consistent text style assignments */
@@ -51,7 +52,15 @@ following. */
 #ka-header {
     padding: 0.4em;
     border-bottom: solid 2px gray;
-    background: #e0ffff;
+    background-color: #e0ffff;
+    height: 2.4em;
+}
+
+#ka-header-searchbox {
+    margin-right: 3em;
+}
+#ka-header-searchbox label {
+    font-size: 0.8em;
 }
 
 #ka-header-logo img {
@@ -64,11 +73,18 @@ following. */
     padding-left: 0.2em;
 }
 
+#ka-narrowsearch {
+    text-transform: capitalize;
+}
 #ka-header-appname {
     color: black;
     font-weight: lighter;
+    text-transform: capitalize;
 }
 
+#ka-header-logoframe {
+    margin-top: 0.4em;
+}
 #ka-header-menu {
     margin-top: 0.2em;
     float: right;
@@ -76,4 +92,13 @@ following. */
 
 #ka-app-bg {
     margin: 2em;
+}
+
+.ka-form label {
+    display: inline-block;
+    min-width: 28em;
+}
+
+.ka-panel {
+    display: none;
 }
