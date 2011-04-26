@@ -38,7 +38,7 @@ $(document).ready(function() {
         var tgt = $(evt.target).parent();
         var app_id = tgt.attr("href").slice(1);
         switchApp(app_id);
-    })
+    });
     $('#ka-header-logo').click(function () {
         switchPanel('ka-panel-homepage');
 
@@ -59,6 +59,17 @@ $(document).ready(function() {
         save_preferences && save_preferences();
         return false;
     });
+
+    var last_update = 'No updates yet';
+
+    $('#kb-manual-sync').click(function () {
+        _postMessage && _postMessage({type: 'trigger_sync'});
+    });
+
+    $('#kb-toggle-sync').click(function () {
+        _postMessage && _postMessage({type: 'toggle_sync'});
+    });
+
 });
 
 var dataView;

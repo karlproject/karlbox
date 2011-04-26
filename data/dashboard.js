@@ -17,6 +17,11 @@ window.save_preferences = function() {
     return false;
 };
 
+window._postMessage = function(message) {
+    postMessage(message);
+};
+
+
 onMessage = function onMessage(message) {
     var mv = message.value;
 
@@ -27,12 +32,31 @@ onMessage = function onMessage(message) {
             $('#kb-karlurl').val(mv.karlurl);
             $('#kb-karlcommunity').val(mv.karlcommunity);
             $('#kb-localdir').val(mv.localdir);
+            
+            // Switch to this panel
+            switchPanel('ka-panel-karlbox');
             return;
         }
         case 'finish_storesetup': {
             return;
         }
+        case 'last_update': {
+            console.log('sent a last_update type');
+            $('#kb-last-updated').text(message.value);
+            return;
+        }
+        case 'sync_on': {
+            $('#kb-toggle-sync').text('Sync is ON')
+            console.log('sent a sync_on type')
+            return;
+        }
+        case 'sync_off': {
+            $('#kb-toggle-sync').text('Sync is OFF')
+            console.log('sent a sync_off type')
+            return;
+        }
     }
 
 };
+
 

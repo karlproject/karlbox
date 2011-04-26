@@ -353,6 +353,37 @@ following. */
 }
 
 
+/* syncing form */
 
+#kb-sync-form {
+    font-size: 0.9em;
+    font-family: Arial, sans-serif;
+    padding: 1em;
+    height: 176px;
+    background-color: silver;
+    border-radius: 1em;
+    width: 180px;
+    margin: 0 10px;
+    float: right;
+
+
+}
+
+#kb-headline {
+    font-size: 1.4em;
+    font-weight: bold;
+}
+
+#kb-last-updated {
+    font-size: xx-small;
+}
+
+#kb-open-dashboard {
+    text-decoration: underline;
+}
+
+#kb-open-dashboard:hover {
+    cursor: pointer;
+}
 
 
