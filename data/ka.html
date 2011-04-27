@@ -103,7 +103,9 @@
                 <div class="options-panel">
                     <div>
                         <button onclick="loadRandomData()">Load 10k Random Data</button>
+                        <!--
                         <button onclick="loadSampleData()">Load Sample Data</button>
+                        -->
                     </div>
                     <p>
 
@@ -116,6 +118,12 @@
                         <div><input type="submit" id="save-item" value="Add Item"/></div>
                     </form>
                     </p>
+                    <div>
+                        <button onclick="saveSync()">Save</button>
+                        <button onclick="loadSync()">Load</button>
+                        <input type="checkbox" name="autoload" id="cb_autoload" /><span>autoload</span>
+                    </div>
+
                 </div>
             </div>
 

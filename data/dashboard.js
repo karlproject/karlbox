@@ -55,6 +55,10 @@ onMessage = function onMessage(message) {
             console.log('sent a sync_off type')
             return;
         }
+        case 'load_sync_finish': {
+            loadSyncFinish(mv);
+            return;
+        }
     }
 
 };

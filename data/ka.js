@@ -139,6 +139,28 @@ function loadRandomData() {
     reloadGrid(_items);
 }
 
+function saveSync() {
+    var items = dataView.getItems();
+    var data = {
+        timeslots: timeslots,
+        items: items
+    }
+    var txt = JSON.stringify(data);
+    _postMessage && _postMessage({type: 'save_sync', value: txt});
+}
+
+function loadSync() {
+    _postMessage && _postMessage({type: 'load_sync'});
+}
+
+function loadSyncFinish(txt) {
+    var data = JSON.parse(txt);
+    timeslots = data.timeslots;
+    reloadGrid(data.items);
+}
+
+
+/*
 function loadSampleData() {
     var url = "piledriver.json";
     $.ajax({
@@ -153,6 +175,8 @@ function loadSampleData() {
                     reloadGrid(data.items);
                 }});
 }
+*/
+
 
 $(function() {
 
@@ -214,7 +238,7 @@ $(function() {
                 return a.value - b.value;
             }
     );
-    loadSampleData();
+    ////loadSampleData();
 
     $('#add-new-item').submit(function (evt) {
         evt.stopPropagation();
