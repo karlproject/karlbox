@@ -156,7 +156,8 @@ function loadSync() {
 function loadSyncFinish(txt) {
     var data = JSON.parse(txt);
     timeslots = data.timeslots;
-    reloadGrid(data.items);
+    grid.setData(data.items);
+    grid.render();
 }
 
 
