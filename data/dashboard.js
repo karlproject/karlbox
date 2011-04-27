@@ -59,6 +59,13 @@ onMessage = function onMessage(message) {
             loadSyncFinish(mv);
             return;
         }
+        case 'sync_changed_file': {
+            if ($('#cb_autoload:checked').val()) {
+                console.log('agility.json will autoload...');
+                loadSync();
+            }
+            return;
+        }
     }
 
 };

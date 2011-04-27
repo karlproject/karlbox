@@ -156,7 +156,7 @@ function loadSync() {
 function loadSyncFinish(txt) {
     var data = JSON.parse(txt);
     timeslots = data.timeslots;
-    grid.setData(data.items);
+    dataView.setItems(data.items);
     grid.render();
 }
 
@@ -240,6 +240,7 @@ $(function() {
             }
     );
     ////loadSampleData();
+    loadSync();
 
     $('#add-new-item').submit(function (evt) {
         evt.stopPropagation();
